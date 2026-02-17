@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import { Button } from '@/components/ui/button';
-import { PlusCircleIcon, MessageSquareIcon } from 'lucide-react';
+import { PlusCircleIcon, EyeIcon, Trash2Icon } from 'lucide-react';
 import AccountingTable from '@/components/dashboard/accounting/table';
 import MetricCard from '@/components/dashboard/hr/metric-card';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useUserStore } from '@/stores/user-store';
 import { format } from 'date-fns';
+import youtubeIcon from '@/assets/icons/youtube-red.png';
 import {
   Dialog,
   DialogContent,
@@ -41,13 +43,28 @@ const ticketFormSchema = z.object({
   description: z
     .string()
     .min(1, { message: 'Description is required' })
-    .max(500, { message: 'Description must be 500 characters or less' }),
+    .max(200, { message: 'Description must be 200 characters or less' }),
 });
 
 const tableColumns = [
   { key: 'ticketId', label: 'Ticket ID' },
   { key: 'requestType', label: 'Request Type' },
-  { key: 'submittedBy', label: 'Submitted By' },
+  {
+    key: 'submittedBy',
+    label: 'Submitted By',
+    render: (value, item) => (
+      <div className="flex items-center gap-2">
+        <Avatar className="size-8">
+          <AvatarFallback
+            className={item.avatarColor || 'bg-blue-600 text-sm text-white'}
+          >
+            {item.avatarInitials}
+          </AvatarFallback>
+        </Avatar>
+        <span>{value}</span>
+      </div>
+    ),
+  },
   { key: 'dateSubmitted', label: 'Date Submitted' },
   { key: 'status', label: 'Status' },
 ];
@@ -66,10 +83,8 @@ const priorityStyles = {
 };
 
 const ticketDropdownActions = [
-  { key: 'view', label: 'View Details' },
-  { key: 'respond', label: 'Respond' },
-  { key: 'assign', label: 'Assign to HR' },
-  { key: 'close', label: 'Close Ticket' },
+  { key: 'view', label: 'View', icon: EyeIcon },
+  { key: 'delete', label: 'Delete', icon: Trash2Icon },
 ];
 
 export default function HRServiceDesk() {
@@ -115,7 +130,11 @@ export default function HRServiceDesk() {
           id: '1',
           ticketId: 'REQ-2025-042',
           requestType: 'Employment Letter',
-          submittedBy: { name: 'Nathaniel Desire', avatar: 'ND' },
+          submittedBy: {
+            name: 'Nathaniel Desire',
+            initials: 'ND',
+            color: 'bg-blue-600 text-white',
+          },
           dateSubmitted: new Date('2025-02-12'),
           status: 'Open',
         },
@@ -123,7 +142,11 @@ export default function HRServiceDesk() {
           id: '2',
           ticketId: 'REQ-2025-041',
           requestType: 'Verification',
-          submittedBy: { name: 'Femi Johnson', avatar: 'FJ' },
+          submittedBy: {
+            name: 'Femi Johnson',
+            initials: 'FJ',
+            color: 'bg-purple-600 text-white',
+          },
           dateSubmitted: new Date('2025-02-12'),
           status: 'In Progress',
         },
@@ -131,7 +154,11 @@ export default function HRServiceDesk() {
           id: '3',
           ticketId: 'REQ-2025-038',
           requestType: 'Payroll Inquiry',
-          submittedBy: { name: 'Sarah Adeyemi', avatar: 'SA' },
+          submittedBy: {
+            name: 'Sarah Adeyemi',
+            initials: 'SA',
+            color: 'bg-orange-600 text-white',
+          },
           dateSubmitted: new Date('2025-02-12'),
           status: 'Closed',
         },
@@ -139,7 +166,11 @@ export default function HRServiceDesk() {
           id: '4',
           ticketId: 'REQ-2025-035',
           requestType: 'Leave Adjustment',
-          submittedBy: { name: 'Kemi Jakada', avatar: 'KJ' },
+          submittedBy: {
+            name: 'Kemi Jakada',
+            initials: 'KJ',
+            color: 'bg-red-600 text-white',
+          },
           dateSubmitted: new Date('2025-02-12'),
           status: 'Resolved',
         },
@@ -161,6 +192,8 @@ export default function HRServiceDesk() {
       ticketId: ticket.ticketId,
       requestType: ticket.requestType,
       submittedBy: ticket.submittedBy.name,
+      avatarInitials: ticket.submittedBy.initials,
+      avatarColor: ticket.submittedBy.color,
       dateSubmitted: format(new Date(ticket.dateSubmitted), 'MMM -dd-yyyy'),
       status: ticket.status,
     }));
@@ -283,17 +316,14 @@ export default function HRServiceDesk() {
           </p>
         </hgroup>
 
-        <div className="flex items-center space-x-4">
-          <Button
-            variant="ghost"
-            className="h-10 gap-2 text-sm text-red-600 hover:text-red-700"
-          >
-            <MessageSquareIcon className="size-4" />
+        <div className="flex items-center gap-4">
+          <Button variant={'outline'} className={'h-10 rounded-lg text-sm'}>
+            <img src={youtubeIcon} alt="YouTube Icon" className="mr-1 h-4" />
             See video guide
           </Button>
           <Button
             onClick={() => setIsCreateTicketOpen(true)}
-            className={'h-10 rounded-2xl text-sm'}
+            className="h-10 gap-2 rounded-lg bg-[#6C2BD9] px-5 text-sm font-medium text-white hover:bg-[#5A23B8]"
           >
             <PlusCircleIcon className="size-4" />
             Create New Ticket
@@ -317,11 +347,11 @@ export default function HRServiceDesk() {
 
         <div className="mt-10">
           <AccountingTable
-            title={'Service Desk Tickets'}
+            title={'Support Tickets'}
             data={ticketData}
             columns={tableColumns}
             searchFields={['ticketId', 'requestType', 'submittedBy']}
-            searchPlaceholder="Search jobs....."
+            searchPlaceholder="Search job......."
             statusStyles={ticketStatusStyles}
             dropdownActions={ticketDropdownActions}
             paginationData={paginationData}
@@ -337,20 +367,18 @@ export default function HRServiceDesk() {
 
       {/* Create Ticket Modal */}
       <Dialog open={isCreateTicketOpen} onOpenChange={setIsCreateTicketOpen}>
-        <DialogContent className="max-h-[90vh] w-full max-w-xl overflow-y-auto p-8">
-          <DialogHeader>
-            <div className="flex items-center gap-3">
-              <div className="flex size-10 items-center justify-center rounded-full bg-green-600">
-                <PlusCircleIcon className="size-5 text-white" />
-              </div>
-              <div>
-                <DialogTitle className="text-xl font-semibold">
-                  Create New Ticket
-                </DialogTitle>
-                <p className="text-sm text-gray-500">
-                  Log an issue request or inquiry for quick resolution
-                </p>
-              </div>
+        <DialogContent className="max-h-[90vh] w-full max-w-xl overflow-y-auto p-8 [&~[data-slot=dialog-overlay]]:bg-[#0C0C0CE5]">
+          <DialogHeader className="flex-row items-start gap-3 space-y-0 text-left">
+            <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-green-600">
+              <PlusCircleIcon className="size-5 text-white" />
+            </div>
+            <div className="flex-1">
+              <DialogTitle className="text-xl font-semibold">
+                Create New Ticket
+              </DialogTitle>
+              <p className="mt-1 text-sm text-gray-500">
+                Log an issue request or inquiry for quick resolution
+              </p>
             </div>
           </DialogHeader>
 
@@ -448,12 +476,12 @@ export default function HRServiceDesk() {
                       <Textarea
                         placeholder="Describe the request..."
                         className="min-h-[120px] resize-none"
-                        maxLength={500}
+                        maxLength={200}
                         {...field}
                       />
                     </FormControl>
                     <div className="flex justify-end">
-                      <p className="text-xs text-gray-500">{charCount}/500</p>
+                      <p className="text-xs text-gray-500">{charCount}/200</p>
                     </div>
                     <FormMessage />
                   </FormItem>

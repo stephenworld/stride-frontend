@@ -65,6 +65,7 @@ export default function AccountingTable({
   itemComponent = null,
   isLoading = false,
   setShowDetails,
+  customHeaderActions = null,
 }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeProductView, setActiveProductView] = useState('grid');
@@ -223,7 +224,9 @@ export default function AccountingTable({
           <>
             <div>
               <h2 className="text-xl font-bold">{title}</h2>
-            { description && <span className='text-[#7D7D7D] text-sm'>{description}</span> }
+              {description && (
+                <span className="text-sm text-[#7D7D7D]">{description}</span>
+              )}
             </div>
 
             <div className="flex items-center gap-3">
@@ -252,6 +255,7 @@ export default function AccountingTable({
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
               </div>
+              {customHeaderActions}
               <Button variant="outline" size="icon">
                 <FilterIcon className="h-4 w-4" />
               </Button>
@@ -362,6 +366,9 @@ export default function AccountingTable({
                                   handleDropdownAction(action.key, item)
                                 }
                               >
+                                {action.icon && (
+                                  <action.icon className="mr-2 h-4 w-4" />
+                                )}
                                 {action.label}
                               </DropdownMenuItem>
                             ))}
