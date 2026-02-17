@@ -1,12 +1,490 @@
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router';
+import { Button } from '@/components/ui/button';
+import { PlusCircleIcon, MessageSquareIcon } from 'lucide-react';
+import AccountingTable from '@/components/dashboard/accounting/table';
+import MetricCard from '@/components/dashboard/hr/metric-card';
+import { useUserStore } from '@/stores/user-store';
+import { format } from 'date-fns';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import toast from 'react-hot-toast';
+
+const ticketFormSchema = z.object({
+  requestType: z.string().min(1, { message: 'Request type is required' }),
+  employeeName: z.string().min(1, { message: 'Employee name is required' }),
+  priority: z.string().min(1, { message: 'Priority is required' }),
+  description: z
+    .string()
+    .min(1, { message: 'Description is required' })
+    .max(500, { message: 'Description must be 500 characters or less' }),
+});
+
+const tableColumns = [
+  { key: 'ticketId', label: 'Ticket ID' },
+  { key: 'requestType', label: 'Request Type' },
+  { key: 'submittedBy', label: 'Submitted By' },
+  { key: 'dateSubmitted', label: 'Date Submitted' },
+  { key: 'status', label: 'Status' },
+];
+
+const ticketStatusStyles = {
+  Open: 'bg-red-100 text-red-800 hover:bg-red-100',
+  'In Progress': 'bg-yellow-100 text-yellow-800 hover:bg-yellow-100',
+  Resolved: 'bg-blue-100 text-blue-800 hover:bg-blue-100',
+  Closed: 'bg-green-100 text-green-800 hover:bg-green-100',
+};
+
+const priorityStyles = {
+  High: 'bg-red-100 text-red-800 hover:bg-red-100',
+  Medium: 'bg-orange-100 text-orange-800 hover:bg-orange-100',
+  Low: 'bg-green-100 text-green-800 hover:bg-green-100',
+};
+
+const ticketDropdownActions = [
+  { key: 'view', label: 'View Details' },
+  { key: 'respond', label: 'Respond' },
+  { key: 'assign', label: 'Assign to HR' },
+  { key: 'close', label: 'Close Ticket' },
+];
+
 export default function HRServiceDesk() {
+  const [isCreateTicketOpen, setIsCreateTicketOpen] = useState(false);
+  const [selectedItems, setSelectedItems] = useState([]);
+  const { activeBusiness } = useUserStore();
+  const [tickets, setTickets] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [paginationData, setPaginationData] = useState({
+    page: 1,
+    totalPages: 1,
+    pageSize: 20,
+    totalCount: 0,
+  });
+  const [analytics, setAnalytics] = useState({
+    totalTickets: 0,
+    openTickets: 0,
+    inProgress: 0,
+    closedTickets: 0,
+  });
+  const navigate = useNavigate();
+
+  const form = useForm({
+    resolver: zodResolver(ticketFormSchema),
+    defaultValues: {
+      requestType: '',
+      employeeName: '',
+      priority: '',
+      description: '',
+    },
+  });
+
+  const descriptionValue = form.watch('description') || '';
+  const charCount = descriptionValue.length;
+
+  // Mock data for demonstration
+  useEffect(() => {
+    if (activeBusiness) {
+      // TODO: Replace with actual API call
+      const mockTickets = [
+        {
+          id: '1',
+          ticketId: 'REQ-2025-042',
+          requestType: 'Employment Letter',
+          submittedBy: { name: 'Nathaniel Desire', avatar: 'ND' },
+          dateSubmitted: new Date('2025-02-12'),
+          status: 'Open',
+        },
+        {
+          id: '2',
+          ticketId: 'REQ-2025-041',
+          requestType: 'Verification',
+          submittedBy: { name: 'Femi Johnson', avatar: 'FJ' },
+          dateSubmitted: new Date('2025-02-12'),
+          status: 'In Progress',
+        },
+        {
+          id: '3',
+          ticketId: 'REQ-2025-038',
+          requestType: 'Payroll Inquiry',
+          submittedBy: { name: 'Sarah Adeyemi', avatar: 'SA' },
+          dateSubmitted: new Date('2025-02-12'),
+          status: 'Closed',
+        },
+        {
+          id: '4',
+          ticketId: 'REQ-2025-035',
+          requestType: 'Leave Adjustment',
+          submittedBy: { name: 'Kemi Jakada', avatar: 'KJ' },
+          dateSubmitted: new Date('2025-02-12'),
+          status: 'Resolved',
+        },
+      ];
+
+      setTickets(mockTickets);
+      setAnalytics({
+        totalTickets: 150,
+        openTickets: 20,
+        inProgress: 70,
+        closedTickets: 50,
+      });
+    }
+  }, [activeBusiness, currentPage]);
+
+  const transformTicketData = (ticketsData) => {
+    return ticketsData.map((ticket) => ({
+      id: ticket.id,
+      ticketId: ticket.ticketId,
+      requestType: ticket.requestType,
+      submittedBy: ticket.submittedBy.name,
+      dateSubmitted: format(new Date(ticket.dateSubmitted), 'MMM -dd-yyyy'),
+      status: ticket.status,
+    }));
+  };
+
+  const ticketData = transformTicketData(tickets);
+
+  // Sample chart data for metrics
+  const sampleChartData = [
+    { month: 'Jan', month1: 600 },
+    { month: 'Feb', month2: 800 },
+    { month: 'Mar', month3: 1000 },
+  ];
+
+  const ticketMetrics = [
+    {
+      title: 'Total Tickets',
+      value: analytics.totalTickets,
+      percentage: 5,
+      isPositive: true,
+      chartData: sampleChartData,
+    },
+    {
+      title: 'Open Tickets',
+      value: analytics.openTickets,
+      percentage: 2,
+      isPositive: false,
+      chartData: sampleChartData,
+    },
+    {
+      title: 'In Progress',
+      value: analytics.inProgress,
+      percentage: 5,
+      isPositive: true,
+      chartData: sampleChartData,
+    },
+    {
+      title: 'Closed Tickets',
+      value: analytics.closedTickets,
+      percentage: 2,
+      isPositive: true,
+      chartData: sampleChartData,
+    },
+  ];
+
+  const handleTicketTableAction = (action, ticket) => {
+    console.log('Ticket action:', action, ticket);
+
+    switch (action) {
+      case 'view':
+        // TODO: Navigate to ticket detail page
+        console.log('View ticket:', ticket.id);
+        break;
+      case 'respond':
+        // TODO: Open response modal
+        console.log('Respond to ticket:', ticket.id);
+        break;
+      case 'assign':
+        // TODO: Open assignment modal
+        console.log('Assign ticket:', ticket.id);
+        break;
+      case 'close':
+        // TODO: Close ticket
+        console.log('Close ticket:', ticket.id);
+        toast.success('Ticket closed successfully');
+        break;
+      default:
+        console.log('Unknown action:', action);
+    }
+  };
+
+  const handleSelectTableItem = (itemId, checked) => {
+    if (checked) {
+      setSelectedItems([...selectedItems, itemId]);
+    } else {
+      setSelectedItems(selectedItems.filter((id) => id !== itemId));
+    }
+  };
+
+  const handleSelectAllItems = (checked) => {
+    if (checked) {
+      setSelectedItems(ticketData.map((item) => item.id));
+    } else {
+      setSelectedItems([]);
+    }
+  };
+
+  const handlePageChange = (newPage) => {
+    setCurrentPage(newPage);
+    setSelectedItems([]);
+  };
+
+  const onSubmitTicket = async (data) => {
+    try {
+      setIsLoading(true);
+      // TODO: Replace with actual API call
+      console.log('Creating ticket:', data);
+
+      // Simulate API call
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
+      toast.success('Ticket created successfully!');
+      setIsCreateTicketOpen(false);
+      form.reset();
+    } catch (error) {
+      console.error('Error creating ticket:', error);
+      toast.error('Failed to create ticket. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
-    <div className="my-5">
-      <hgroup>
-        <h1 className="text-2xl font-bold">HR Service Desk</h1>
-        <p className="text-sm text-[#7D7D7D]">
-          Track and manage employee HR Service Desk
-        </p>
-      </hgroup>
+    <div className="my-4 min-h-screen">
+      <div className="flex flex-wrap items-center justify-between gap-6">
+        <hgroup>
+          <h1 className="text-2xl font-bold">HR Service Desk</h1>
+          <p className="text-sm text-[#7D7D7D]">
+            Manage employee requests and support tickets
+          </p>
+        </hgroup>
+
+        <div className="flex items-center space-x-4">
+          <Button
+            variant="ghost"
+            className="h-10 gap-2 text-sm text-red-600 hover:text-red-700"
+          >
+            <MessageSquareIcon className="size-4" />
+            See video guide
+          </Button>
+          <Button
+            onClick={() => setIsCreateTicketOpen(true)}
+            className={'h-10 rounded-2xl text-sm'}
+          >
+            <PlusCircleIcon className="size-4" />
+            Create New Ticket
+          </Button>
+        </div>
+      </div>
+
+      <div className="mt-10">
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          {ticketMetrics.map((metric, index) => (
+            <MetricCard
+              key={index}
+              title={metric.title}
+              value={metric.value}
+              percentage={metric.percentage}
+              isPositive={metric.isPositive}
+              chartData={metric.chartData}
+            />
+          ))}
+        </div>
+
+        <div className="mt-10">
+          <AccountingTable
+            title={'Service Desk Tickets'}
+            data={ticketData}
+            columns={tableColumns}
+            searchFields={['ticketId', 'requestType', 'submittedBy']}
+            searchPlaceholder="Search jobs....."
+            statusStyles={ticketStatusStyles}
+            dropdownActions={ticketDropdownActions}
+            paginationData={paginationData}
+            onPageChange={handlePageChange}
+            onRowAction={handleTicketTableAction}
+            selectedItems={selectedItems}
+            handleSelectItem={handleSelectTableItem}
+            handleSelectAll={handleSelectAllItems}
+            isLoading={isLoading}
+          />
+        </div>
+      </div>
+
+      {/* Create Ticket Modal */}
+      <Dialog open={isCreateTicketOpen} onOpenChange={setIsCreateTicketOpen}>
+        <DialogContent className="max-h-[90vh] w-full max-w-xl overflow-y-auto p-8">
+          <DialogHeader>
+            <div className="flex items-center gap-3">
+              <div className="flex size-10 items-center justify-center rounded-full bg-green-600">
+                <PlusCircleIcon className="size-5 text-white" />
+              </div>
+              <div>
+                <DialogTitle className="text-xl font-semibold">
+                  Create New Ticket
+                </DialogTitle>
+                <p className="text-sm text-gray-500">
+                  Log an issue request or inquiry for quick resolution
+                </p>
+              </div>
+            </div>
+          </DialogHeader>
+
+          <Form {...form}>
+            <form
+              onSubmit={form.handleSubmit(onSubmitTicket)}
+              className="mt-6 space-y-5"
+            >
+              <FormField
+                control={form.control}
+                name="requestType"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Request Type</FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger className={'h-11'}>
+                          <SelectValue placeholder="Employment Letter" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="employment-letter">
+                          Employment Letter
+                        </SelectItem>
+                        <SelectItem value="verification">
+                          Verification
+                        </SelectItem>
+                        <SelectItem value="leave">Leave Request</SelectItem>
+                        <SelectItem value="payroll">Payroll Inquiry</SelectItem>
+                        <SelectItem value="benefits">Benefits</SelectItem>
+                        <SelectItem value="attendance">Attendance</SelectItem>
+                        <SelectItem value="documents">Documents</SelectItem>
+                        <SelectItem value="other">Other</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="employeeName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Employee Name</FormLabel>
+                    <FormControl>
+                      <Input
+                        className={'h-11'}
+                        placeholder="Search employee..."
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="priority"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Priority</FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger className={'h-11'}>
+                          <SelectValue placeholder="Low" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="low">Low</SelectItem>
+                        <SelectItem value="medium">Medium</SelectItem>
+                        <SelectItem value="high">High</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="description"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Description</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder="Describe the request..."
+                        className="min-h-[120px] resize-none"
+                        maxLength={500}
+                        {...field}
+                      />
+                    </FormControl>
+                    <div className="flex justify-end">
+                      <p className="text-xs text-gray-500">{charCount}/500</p>
+                    </div>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <div className="flex justify-end gap-3 pt-4">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    setIsCreateTicketOpen(false);
+                    form.reset();
+                  }}
+                  className="h-11 min-w-[100px]"
+                  disabled={isLoading}
+                >
+                  Back
+                </Button>
+                <Button
+                  type="submit"
+                  className="h-11 min-w-[120px]"
+                  disabled={isLoading}
+                >
+                  {isLoading ? 'Adding...' : 'Add Ticket'}
+                </Button>
+              </div>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
