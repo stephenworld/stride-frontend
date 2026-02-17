@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import AddEmployeeModal from '@/components/dashboard/hr/employee-directory/add-employee';
+import SuccessModal from '@/components/dashboard/hr/success-modal';
 import { Button } from '@/components/ui/button';
 import { PlusCircleIcon, Layers3Icon } from 'lucide-react';
 import AccountingTable from '@/components/dashboard/accounting/table';
@@ -306,6 +307,14 @@ export default function EmployeeDirectory() {
       <AddEmployeeModal
         open={isCreateEmployeeOpen}
         onOpenChange={setIsCreateEmployeeOpen}
+        onSuccess={() => setIsSuccessModalOpen(true)}
+      />
+
+      <SuccessModal
+        open={isSuccessModalOpen}
+        onOpenChange={setIsSuccessModalOpen}
+        title="Employee Added"
+        subtitle="You've successfully Added an Employee"
       />
     </div>
   );

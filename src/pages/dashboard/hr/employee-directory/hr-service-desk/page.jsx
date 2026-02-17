@@ -35,6 +35,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import toast from 'react-hot-toast';
+import SuccessModal from '@/components/dashboard/hr/success-modal';
 
 const ticketFormSchema = z.object({
   requestType: z.string().min(1, { message: 'Request type is required' }),
@@ -89,6 +90,7 @@ const ticketDropdownActions = [
 
 export default function HRServiceDesk() {
   const [isCreateTicketOpen, setIsCreateTicketOpen] = useState(false);
+  const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
   const [selectedItems, setSelectedItems] = useState([]);
   const { activeBusiness } = useUserStore();
   const [tickets, setTickets] = useState([]);
@@ -295,9 +297,9 @@ export default function HRServiceDesk() {
       // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
-      toast.success('Ticket created successfully!');
       setIsCreateTicketOpen(false);
       form.reset();
+      setIsSuccessModalOpen(true);
     } catch (error) {
       console.error('Error creating ticket:', error);
       toast.error('Failed to create ticket. Please try again.');
@@ -367,16 +369,19 @@ export default function HRServiceDesk() {
 
       {/* Create Ticket Modal */}
       <Dialog open={isCreateTicketOpen} onOpenChange={setIsCreateTicketOpen}>
-        <DialogContent className="max-h-[90vh] w-full max-w-xl overflow-y-auto p-8 [&~[data-slot=dialog-overlay]]:bg-[#0C0C0CE5]">
-          <DialogHeader className="flex-row items-start gap-3 space-y-0 text-left">
-            <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-green-600">
+        <DialogContent
+          className="max-h-[90vh] w-full max-w-xl overflow-y-auto p-8"
+          overlayClassName="bg-[#0C0C0CE5]"
+        >
+          <DialogHeader className="flex flex-row items-center gap-3 space-y-0 text-left">
+            <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-[#254C00]">
               <PlusCircleIcon className="size-5 text-white" />
             </div>
             <div className="flex-1">
-              <DialogTitle className="text-xl font-semibold">
+              <DialogTitle className="font-raleway text-2xl font-semibold">
                 Create New Ticket
               </DialogTitle>
-              <p className="mt-1 text-sm text-gray-500">
+              <p className="font-raleway mt-1 text-sm font-normal text-gray-500">
                 Log an issue request or inquiry for quick resolution
               </p>
             </div>
@@ -488,7 +493,7 @@ export default function HRServiceDesk() {
                 )}
               />
 
-              <div className="flex justify-end gap-3 pt-4">
+              <div className="flex justify-end gap-6 pt-8">
                 <Button
                   type="button"
                   variant="outline"
@@ -496,14 +501,14 @@ export default function HRServiceDesk() {
                     setIsCreateTicketOpen(false);
                     form.reset();
                   }}
-                  className="h-11 min-w-[100px]"
+                  className="font-raleway h-11 min-w-[120px] rounded-full border border-[#254C00] px-6 py-2 text-[12px] leading-[24px] font-normal text-[#254C00] hover:bg-[#254C00] hover:text-white"
                   disabled={isLoading}
                 >
                   Back
                 </Button>
                 <Button
                   type="submit"
-                  className="h-11 min-w-[120px]"
+                  className="font-raleway h-11 min-w-[160px] rounded-full border border-[#3300C9] bg-[#3300C9] px-8 py-2 text-[12px] leading-[24px] font-normal text-white hover:bg-[#3300C9]/90"
                   disabled={isLoading}
                 >
                   {isLoading ? 'Adding...' : 'Add Ticket'}
@@ -513,6 +518,13 @@ export default function HRServiceDesk() {
           </Form>
         </DialogContent>
       </Dialog>
+
+      <SuccessModal
+        open={isSuccessModalOpen}
+        onOpenChange={setIsSuccessModalOpen}
+        title="Ticket Created"
+        subtitle="You've successfully created a ticket"
+      />
     </div>
   );
 }

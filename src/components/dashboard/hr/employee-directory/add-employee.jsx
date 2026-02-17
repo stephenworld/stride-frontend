@@ -120,12 +120,9 @@ export default function AddEmployeeModal({ open, onOpenChange, onSuccess }) {
         data: apiData,
       });
 
-      toast.success('Employee successfully added!');
-      if (onSuccess) {
-        onSuccess();
-      }
       onOpenChange(false);
       form.reset();
+      onSuccess?.();
     } catch (err) {
       console.log('Error submitting employee data:', err);
       toast.error(
