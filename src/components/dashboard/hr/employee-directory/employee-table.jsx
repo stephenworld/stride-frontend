@@ -15,20 +15,22 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import {
-  FilterIcon,
-  Layers3Icon,
-  MoreHorizontalIcon,
-  SearchIcon,
-} from 'lucide-react';
 import emptyTableImg from '@/assets/icons/empty-table.svg';
+import {
+  SearchIcon,
+  DepartmentIcon,
+  FilterIcon,
+  ArrowLeftIcon,
+  ArrowRightIcon,
+  HorizontalDotsIcon,
+} from '@/components/ui/svgs';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 const STATUS_STYLES = {
-  Active: 'bg-[#DCFCE7] text-[#15803D]',
-  Onboarding: 'bg-[#F1F5F9] text-[#475569]',
-  'On Leave': 'bg-[#FEF9C3] text-[#A16207]',
-  Exited: 'bg-[#FEE2E2] text-[#B91C1C]',
+  Active: 'bg-[#24A9591A] text-[#24A959]',
+  Onboarding: 'bg-[#4B55631A] text-[#4B5563]',
+  'On Leave': 'bg-[#F39C121A] text-[#F39C12]',
+  Exited: 'bg-[#EF44441A] text-[#EF4444]',
   Inactive: 'bg-[#F3F4F6] text-[#6B7280]',
 };
 
@@ -109,22 +111,24 @@ export default function EmployeeTable({
       <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
         <h2 className="text-xl font-bold text-gray-900">All Employees</h2>
 
-        <div className="flex items-center gap-3">
-          {/* Search */}
+        <div className="flex items-center gap-[7px]">
+          {/* Search — width 228px, height 48px, radius 16px, padding 12px 100px 12px 12px, border 1px */}
           <div className="relative">
-            <SearchIcon className="absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-gray-400" />
+            <span className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2">
+              <SearchIcon className="size-4 text-[#7D7D7D]" />
+            </span>
             <Input
               placeholder="Search employee......."
-              className="h-10 w-64 rounded-lg pl-10 text-sm"
+              className="h-12 w-[228px] gap-[7px] rounded-[16px] border border-[#E5E7EB] py-3 pr-[100px] pl-3 text-sm outline-none focus-visible:ring-0"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
 
-          {/* Department filter */}
+          {/* Department filter — same style as search input: h-48px, radius 16px, border */}
           <Select value={selectedDepartment} onValueChange={onDepartmentChange}>
-            <SelectTrigger className="h-10 w-[180px] gap-2">
-              <Layers3Icon className="size-4 text-gray-400" />
+            <SelectTrigger className="h-12 w-[228px] gap-[7px] rounded-[16px] border border-[#E5E7EB] py-3 pr-4 pl-3 text-sm outline-none focus:ring-0 focus:ring-offset-0">
+              <DepartmentIcon className="shrink-0 text-[#7D7D7D]" />
               <SelectValue placeholder="All Department" />
             </SelectTrigger>
             <SelectContent>
@@ -138,24 +142,31 @@ export default function EmployeeTable({
           </Select>
 
           {/* Filter icon */}
-          <Button variant="outline" size="icon" className="size-10 shrink-0">
-            <FilterIcon className="size-4 text-gray-500" />
+          <Button
+            variant="outline"
+            size="icon"
+            className="size-12 shrink-0 rounded-[16px] border"
+          >
+            <FilterIcon className="size-5 text-[#7D7D7D]" />
           </Button>
         </div>
       </div>
 
-      {/* ── Column headers ── */}
-      <div className={`${GRID} mb-2 gap-4 px-4`}>
+      {/* ── Column headers: Raleway 500, 14px, 24px line-height, #7D7D7D ── */}
+      <div className={`${GRID} mb-2 items-center gap-4 px-4`}>
         {COLS.map((col) => (
-          <span key={col.key} className="text-xs font-medium text-gray-400">
+          <span
+            key={col.key}
+            className="font-raleway text-sm leading-6 font-medium text-[#7D7D7D]"
+          >
             {col.label}
           </span>
         ))}
         <span />
       </div>
 
-      {/* ── Rows ── */}
-      <div className="space-y-2">
+      {/* ── Rows (12px spacing between rows) ── */}
+      <div className="space-y-3">
         {isLoading ? (
           Array.from({ length: 5 }).map((_, i) => <SkeletonRow key={i} />)
         ) : filtered.length === 0 ? (
@@ -170,41 +181,41 @@ export default function EmployeeTable({
           filtered.map((employee) => (
             <div
               key={employee.id}
-              className={`${GRID} items-center gap-4 rounded-xl border border-gray-100 bg-white px-4 py-3 shadow-[0_1px_4px_0_rgba(0,0,0,0.06)] transition-shadow hover:shadow-[0_2px_8px_0_rgba(0,0,0,0.08)]`}
+              className={`${GRID} h-[66px] w-full items-center gap-6 rounded-[16px] border border-[#E8E8E8] bg-white px-5 py-4`}
             >
               {/* Employee Name + Avatar */}
               <div className="flex min-w-0 items-center gap-3">
                 <Avatar className="size-10 shrink-0">
                   <AvatarImage src={employee.avatarUrl} alt={employee.name} />
                   <AvatarFallback
-                    className={`${employee.avatarColor || 'bg-blue-600'} text-sm font-semibold text-white`}
+                    className={`${employee.avatarColor || 'bg-blue-600'} font-raleway text-sm font-medium text-white`}
                   >
                     {employee.avatarInitials}
                   </AvatarFallback>
                 </Avatar>
-                <span className="truncate text-sm font-medium text-gray-900">
+                <span className="font-raleway truncate text-sm leading-6 font-medium text-[#000000CC]">
                   {employee.name}
                 </span>
               </div>
 
               {/* Role */}
-              <span className="truncate text-sm text-gray-600">
+              <span className="font-raleway truncate text-sm leading-6 font-medium text-[#000000CC]">
                 {employee.role || '—'}
               </span>
 
               {/* Department */}
-              <span className="truncate text-sm text-gray-600">
+              <span className="font-raleway truncate text-sm leading-6 font-medium text-[#000000CC]">
                 {employee.department || '—'}
               </span>
 
               {/* Employee ID */}
-              <span className="text-sm text-gray-600">
+              <span className="font-raleway text-sm leading-6 font-medium text-[#000000CC]">
                 {employee.employeeId || '—'}
               </span>
 
-              {/* Status badge */}
+              {/* Status badge — 98×34px, radius 16px, padding 5px 10px, gap 10px */}
               <span
-                className={`inline-flex w-fit items-center rounded-full px-3 py-1 text-xs font-medium ${STATUS_STYLES[employee.status] || 'bg-gray-100 text-gray-600'}`}
+                className={`flex h-[34px] w-[98px] items-center justify-center gap-2.5 overflow-hidden rounded-[16px] px-[10px] py-[5px] text-center text-xs font-medium opacity-100 ${STATUS_STYLES[employee.status] || 'bg-gray-100 text-gray-600'}`}
               >
                 {employee.status}
               </span>
@@ -213,12 +224,8 @@ export default function EmployeeTable({
               <div className="flex justify-end">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="size-8 text-gray-400 hover:text-gray-600"
-                    >
-                      <MoreHorizontalIcon className="size-4" />
+                    <Button variant="ghost" size="icon" className="size-8">
+                      <HorizontalDotsIcon className="size-5" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent
@@ -252,9 +259,10 @@ export default function EmployeeTable({
         <button
           onClick={() => page > 1 && onPageChange?.(page - 1)}
           disabled={page <= 1}
-          className="flex h-9 items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-4 text-sm font-medium text-gray-700 shadow-xs transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
+          className="flex h-9 items-center justify-center gap-1.5 rounded-lg border border-gray-200 bg-white px-4 text-sm font-medium text-gray-700 shadow-xs transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
+          aria-label="Previous page"
         >
-          ← Previous
+          <ArrowLeftIcon className="size-5" />
         </button>
 
         <div className="flex items-center gap-1">
@@ -285,9 +293,10 @@ export default function EmployeeTable({
         <button
           onClick={() => page < totalPages && onPageChange?.(page + 1)}
           disabled={page >= totalPages}
-          className="flex h-9 items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-4 text-sm font-medium text-gray-700 shadow-xs transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
+          className="flex h-9 items-center justify-center gap-1.5 rounded-lg border border-gray-200 bg-white px-4 text-sm font-medium text-gray-700 shadow-xs transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
+          aria-label="Next page"
         >
-          Next →
+          <ArrowRightIcon className="size-5" />
         </button>
       </div>
     </div>
