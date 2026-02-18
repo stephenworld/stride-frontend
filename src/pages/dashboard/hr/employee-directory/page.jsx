@@ -1,24 +1,14 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import AddEmployeeModal from '@/components/dashboard/hr/employee-directory/add-employee';
+import EmployeeTable from '@/components/dashboard/hr/employee-directory/employee-table';
 import SuccessModal from '@/components/dashboard/hr/success-modal';
 import { Button } from '@/components/ui/button';
-import { Layers3Icon } from 'lucide-react';
 import { AddIcon, EyeIcon, EditIcon, DeleteIcon } from '@/components/ui/svgs';
-import AccountingTable from '@/components/dashboard/accounting/table';
 import MetricCard from '@/components/dashboard/hr/metric-card';
 import EmployeeService from '@/api/employee';
 import { useUserStore } from '@/stores/user-store';
-import { format } from 'date-fns';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import youtubeIcon from '@/assets/icons/youtube-red.png';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 
 const getInitials = (name) =>
   name
@@ -39,36 +29,6 @@ const getAvatarColor = (name) => {
   const i =
     name.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0) % colors.length;
   return colors[i];
-};
-
-const tableColumns = [
-  {
-    key: 'name',
-    label: 'Employee Name',
-    render: (value, item) => (
-      <div className="flex items-center gap-3">
-        <Avatar className="size-10 shrink-0">
-          <AvatarFallback
-            className={`${item.avatarColor || 'bg-blue-600'} text-sm font-medium text-white`}
-          >
-            {item.avatarInitials}
-          </AvatarFallback>
-        </Avatar>
-        <span className="font-medium">{value}</span>
-      </div>
-    ),
-  },
-  { key: 'role', label: 'Role' },
-  { key: 'department', label: 'Department' },
-  { key: 'employeeId', label: 'Employee ID' },
-  { key: 'status', label: 'Status' },
-];
-
-const employeeStatusStyles = {
-  Active: 'bg-green-100 text-green-800 hover:bg-green-100',
-  Onboarding: 'bg-slate-100 text-slate-700 hover:bg-slate-100',
-  'On Leave': 'bg-amber-100 text-amber-800 hover:bg-amber-100',
-  Exited: 'bg-red-100 text-red-800 hover:bg-red-100',
 };
 
 const employeeDropdownActions = [
@@ -359,39 +319,15 @@ export default function EmployeeDirectory() {
       </div>
 
       <div className="mt-10">
-        <AccountingTable
-          title={'All Employees'}
+        <EmployeeTable
           data={employeeData}
-          columns={tableColumns}
-          searchFields={['name', 'employeeId', 'role', 'department']}
-          searchPlaceholder="Search employee......"
-          statusStyles={employeeStatusStyles}
-          dropdownActions={employeeDropdownActions}
+          isLoading={isLoading}
           paginationData={paginationData}
           onPageChange={handlePageChange}
           onRowAction={handleEmployeeTableAction}
-          isLoading={isLoading}
-          cardStyleRows
-          optionsMenuStyle
-          customHeaderActions={
-            <Select
-              value={selectedDepartment}
-              onValueChange={setSelectedDepartment}
-            >
-              <SelectTrigger className="w-[180px] gap-2">
-                <Layers3Icon className="h-4 w-4 text-gray-500" />
-                <SelectValue placeholder="All Department" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Department</SelectItem>
-                <SelectItem value="engineering">Engineering</SelectItem>
-                <SelectItem value="sales">Sales</SelectItem>
-                <SelectItem value="marketing">Marketing</SelectItem>
-                <SelectItem value="hr">Human Resources</SelectItem>
-                <SelectItem value="finance">Finance</SelectItem>
-              </SelectContent>
-            </Select>
-          }
+          dropdownActions={employeeDropdownActions}
+          selectedDepartment={selectedDepartment}
+          onDepartmentChange={setSelectedDepartment}
         />
       </div>
 
