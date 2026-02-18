@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { ArrowLeftIcon } from '@/components/ui/svgs';
+import { Paperclip } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 // Mock conversation and activity for demo
@@ -32,11 +33,41 @@ const MOCK_CONVERSATION = [
 ];
 
 const MOCK_ACTIVITY = [
-  { id: '1', label: 'Ticket created', by: 'Femi Johnson', time: 'May 12, 2024, 10:30 AM', done: true },
-  { id: '2', label: 'Status changed to Open', by: 'System', time: 'May 12, 2024, 10:30 AM', done: true },
-  { id: '3', label: 'Status changed to In Progress', by: 'Admin User', time: 'May 12, 2024, 10:30 AM', done: false },
-  { id: '4', label: 'Status changed to Resolved', by: 'Admin User', time: 'May 12, 2024, 10:30 AM', done: false },
-  { id: '5', label: 'Status changed to Closed', by: 'Admin User', time: 'May 12, 2024, 10:30 AM', done: false },
+  {
+    id: '1',
+    label: 'Ticket created',
+    by: 'Femi Johnson',
+    time: 'May 12, 2024, 10:30 AM',
+    done: true,
+  },
+  {
+    id: '2',
+    label: 'Status changed to Open',
+    by: 'System',
+    time: 'May 12, 2024, 10:30 AM',
+    done: true,
+  },
+  {
+    id: '3',
+    label: 'Status changed to In Progress',
+    by: 'Admin User',
+    time: 'May 12, 2024, 10:30 AM',
+    done: false,
+  },
+  {
+    id: '4',
+    label: 'Status changed to Resolved',
+    by: 'Admin User',
+    time: 'May 12, 2024, 10:30 AM',
+    done: false,
+  },
+  {
+    id: '5',
+    label: 'Status changed to Closed',
+    by: 'Admin User',
+    time: 'May 12, 2024, 10:30 AM',
+    done: false,
+  },
 ];
 
 const STATUS_STYLES = {
@@ -62,7 +93,7 @@ export default function RequestDetailsView({
       <button
         type="button"
         onClick={onBack}
-        className="font-raleway flex items-center gap-2 text-[20px] font-semibold leading-none text-gray-900"
+        className="font-raleway flex items-center gap-2 text-[20px] leading-none font-semibold text-gray-900"
       >
         <ArrowLeftIcon className="size-5 shrink-0" />
         Request Details
@@ -72,25 +103,50 @@ export default function RequestDetailsView({
         {/* Left: Ticket info + Conversation */}
         <div className="space-y-6 lg:col-span-2">
           <div className="rounded-xl border border-gray-100 bg-white p-5">
-            <p className="font-raleway text-sm text-gray-500">
-              Ticket ID: <span className="font-medium text-gray-900">{ticket?.ticketId}</span>
-            </p>
-            <p className="mt-1 font-raleway text-sm text-gray-500">
-              Request Type: <span className="font-medium text-gray-900">{ticket?.requestType}</span>
-            </p>
-            <p className="mt-1 font-raleway text-sm text-gray-500">
-              Submitted By: <span className="font-medium text-gray-900">{ticket?.submittedBy}</span>
-            </p>
-            <p className="mt-1 font-raleway text-sm text-gray-500">
-              Date Submitted: <span className="font-medium text-gray-900">{ticket?.dateSubmitted}</span>
-            </p>
+            <div className="grid grid-cols-2 gap-x-8 gap-y-3">
+              <div>
+                <p className="font-raleway text-sm text-gray-500">Ticket ID</p>
+                <p className="font-raleway mt-0.5 text-sm font-medium text-gray-900">
+                  {ticket?.ticketId}
+                </p>
+              </div>
+              <div>
+                <p className="font-raleway text-sm text-gray-500">
+                  Request Type
+                </p>
+                <p className="font-raleway mt-0.5 text-sm font-medium text-gray-900">
+                  {ticket?.requestType}
+                </p>
+              </div>
+              <div>
+                <p className="font-raleway text-sm text-gray-500">
+                  Submitted By
+                </p>
+                <p className="font-raleway mt-0.5 text-sm font-medium text-gray-900">
+                  {ticket?.submittedBy}
+                </p>
+              </div>
+              <div>
+                <p className="font-raleway text-sm text-gray-500">
+                  Date Submitted
+                </p>
+                <p className="font-raleway mt-0.5 text-sm font-medium text-gray-900">
+                  {ticket?.dateSubmitted}
+                </p>
+              </div>
+            </div>
           </div>
 
           {/* Conversation */}
           <div className="rounded-xl border border-gray-100 bg-white p-5">
-            <h3 className="font-raleway mb-4 text-base font-semibold text-gray-900">
-              Conversation
-            </h3>
+            <div className="mb-4 flex items-center justify-between">
+              <h3 className="font-raleway text-base font-semibold text-gray-900">
+                Conversation
+              </h3>
+              <span className="rounded-md bg-[#FEE2E2] px-2 py-1 text-xs font-medium text-[#B91C1C]">
+                High
+              </span>
+            </div>
             <div className="space-y-4">
               {MOCK_CONVERSATION.map((msg) => (
                 <div
@@ -110,29 +166,39 @@ export default function RequestDetailsView({
               ))}
             </div>
             {!isClosed && (
-              <div className="mt-4 flex gap-2">
+              <div className="mt-4">
                 <Textarea
                   placeholder="Type your reply here..."
                   value={replyText}
                   onChange={(e) => setReplyText(e.target.value)}
-                  className="min-h-[80px] flex-1 resize-none rounded-lg border text-sm"
+                  className="min-h-[80px] w-full resize-none rounded-lg border text-sm"
                 />
-                <Button
-                  type="button"
-                  onClick={() => {
-                    onSendReply?.(replyText);
-                    setReplyText('');
-                  }}
-                  className="font-raleway shrink-0 rounded-lg bg-[#3300C9] px-4 text-sm font-semibold text-white hover:bg-[#5A23B8]"
-                >
-                  Send Reply
-                </Button>
+                <div className="mt-2 flex items-center justify-end gap-2">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="size-9 text-gray-500 hover:text-gray-700"
+                  >
+                    <Paperclip className="size-4" />
+                  </Button>
+                  <Button
+                    type="button"
+                    onClick={() => {
+                      onSendReply?.(replyText);
+                      setReplyText('');
+                    }}
+                    className="font-raleway rounded-lg bg-[#3300C9] px-6 text-sm font-semibold text-white hover:bg-[#5A23B8]"
+                  >
+                    Send Reply
+                  </Button>
+                </div>
               </div>
             )}
           </div>
         </div>
 
-        {/* Right: Status + Activity + Actions */}
+        {/* Right: Ticket Status Badge + Activity + Actions */}
         <div className="space-y-6">
           <div className="rounded-xl border border-gray-100 bg-white p-5">
             <h3 className="font-raleway mb-3 text-base font-semibold text-gray-900">
@@ -146,33 +212,43 @@ export default function RequestDetailsView({
             >
               {ticket?.status ?? 'Open'}
             </span>
-            <p className="mt-2 font-raleway text-xs text-gray-500">Priority</p>
-            <span className="mt-1 inline-block rounded-md bg-[#FEE2E2] px-2 py-0.5 text-xs font-medium text-[#B91C1C]">
-              High
-            </span>
           </div>
 
           <div className="rounded-xl border border-gray-100 bg-white p-5">
             <h3 className="font-raleway mb-4 text-base font-semibold text-gray-900">
               Activity Log
             </h3>
-            <div className="space-y-3">
+            <div className="relative">
               {MOCK_ACTIVITY.map((item, i) => (
-                <div key={item.id} className="flex gap-3">
+                <div
+                  key={item.id}
+                  className="relative flex gap-3 pb-6 last:pb-0"
+                >
+                  {i < MOCK_ACTIVITY.length - 1 && (
+                    <div
+                      className={cn(
+                        'absolute top-6 left-3 h-full w-[2px]',
+                        item.done ? 'bg-green-300' : 'bg-gray-300'
+                      )}
+                      style={{ marginLeft: '-1px' }}
+                    />
+                  )}
                   <span
                     className={cn(
-                      'flex size-6 shrink-0 items-center justify-center rounded-full text-xs',
-                      item.done ? 'bg-green-100 text-green-700' : 'bg-gray-200 text-gray-500'
+                      'relative z-10 flex size-6 shrink-0 items-center justify-center rounded-full border-2 text-xs font-bold',
+                      item.done
+                        ? 'border-green-500 bg-white text-green-500'
+                        : 'border-gray-300 bg-gray-100 text-gray-400'
                     )}
                   >
-                    {item.done ? '✓' : '○'}
+                    {item.done ? '✓' : ''}
                   </span>
-                  <div>
+                  <div className="flex-1 pt-0.5">
                     <p className="font-raleway text-sm font-medium text-gray-900">
                       {item.label}
                     </p>
-                    <p className="font-raleway text-xs text-gray-500">
-                      {item.by} · {item.time}
+                    <p className="font-raleway mt-0.5 text-xs text-gray-500">
+                      by {item.by} · {item.time}
                     </p>
                   </div>
                 </div>
