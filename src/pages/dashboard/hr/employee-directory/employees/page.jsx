@@ -51,6 +51,125 @@ import { cn } from '@/lib/utils';
 import EmployeeService from '@/api/employee';
 import toast from 'react-hot-toast';
 
+// Set to true to always use dummy data for UI testing (e.g. when opening /employees/1 … /employees/4)
+const USE_MOCK_FOR_TESTING = true;
+
+// Dummy data for employee detail UI testing (matches directory mock ids 1–4)
+const MOCK_EMPLOYEES_BY_ID = {
+  1: {
+    id: '1',
+    firstName: 'Nathaniel',
+    lastName: 'Desire',
+    employeeId: '345321231',
+    email: 'nathaniel.desire@example.com',
+    phoneNumber: '+234 800 000 0001',
+    gender: 'Male',
+    dateOfBirth: '1990-05-12',
+    department: 'Engineering',
+    departmentName: 'Engineering',
+    positionTitle: 'Senior Software Engineer',
+    position: 'Senior Software Engineer',
+    employmentType: 'FULL_TIME',
+    homeAddress: '12 Marina Street, Lagos Island, Lagos',
+    address: { address1: '12 Marina Street, Lagos Island, Lagos' },
+    hireDate: '2023-01-15',
+    startDate: '2023-01-15',
+    lineManager: 'Ada Okafor',
+    status: 'ACTIVE',
+    bankName: 'GTBank',
+    accountName: 'Nathaniel Desire',
+    accountNumber: '0123456789',
+    salary: 850000,
+    taxId: 'TIN-NG-123456',
+    bvn: '22123456789',
+    payrollStatus: 'Active',
+  },
+  2: {
+    id: '2',
+    firstName: 'Femi',
+    lastName: 'Johnson',
+    employeeId: '345321232',
+    email: 'femi.johnson@example.com',
+    phoneNumber: '+234 800 000 0002',
+    gender: 'Male',
+    dateOfBirth: '1988-11-03',
+    department: 'Engineering',
+    departmentName: 'Engineering',
+    positionTitle: 'Senior Software Engineer',
+    position: 'Senior Software Engineer',
+    employmentType: 'FULL_TIME',
+    homeAddress: '45 Adeola Odeku Street, Victoria Island, Lagos',
+    address: { address1: '45 Adeola Odeku Street, Victoria Island, Lagos' },
+    hireDate: '2022-06-01',
+    startDate: '2022-06-01',
+    lineManager: 'Ada Okafor',
+    status: 'ON_LEAVE',
+    bankName: 'Access Bank',
+    accountName: 'Femi Johnson',
+    accountNumber: '0987654321',
+    salary: 920000,
+    taxId: 'TIN-NG-234567',
+    bvn: '22987654321',
+    payrollStatus: 'Active',
+  },
+  3: {
+    id: '3',
+    firstName: 'Sarah',
+    lastName: 'Adeyemi',
+    employeeId: '345321233',
+    email: 'sarah.adeyemi@example.com',
+    phoneNumber: '+234 800 000 0003',
+    gender: 'Female',
+    dateOfBirth: '1992-07-22',
+    department: 'Engineering',
+    departmentName: 'Engineering',
+    positionTitle: 'Senior Software Engineer',
+    position: 'Senior Software Engineer',
+    employmentType: 'CONTRACT',
+    homeAddress: '78 Allen Avenue, Ikeja, Lagos',
+    address: { address1: '78 Allen Avenue, Ikeja, Lagos' },
+    hireDate: '2021-03-10',
+    startDate: '2021-03-10',
+    lineManager: 'Chidi Nwosu',
+    status: 'TERMINATED',
+    bankName: 'Zenith Bank',
+    accountName: 'Sarah Adeyemi',
+    accountNumber: '1122334455',
+    salary: 780000,
+    taxId: 'TIN-NG-345678',
+    bvn: '22345678901',
+    payrollStatus: 'Inactive',
+  },
+  4: {
+    id: '4',
+    firstName: 'Kemi',
+    lastName: 'Jakada',
+    employeeId: '345321234',
+    email: 'kemi.jakada@example.com',
+    phoneNumber: '+234 800 000 0004',
+    gender: 'Female',
+    dateOfBirth: '1995-01-08',
+    department: 'Engineering',
+    departmentName: 'Engineering',
+    positionTitle: 'Senior Software Engineer',
+    position: 'Senior Software Engineer',
+    employmentType: 'INTERN',
+    homeAddress: '3 Bourdillon Road, Ikoyi, Lagos',
+    address: { address1: '3 Bourdillon Road, Ikoyi, Lagos' },
+    hireDate: '2024-02-20',
+    startDate: '2024-02-20',
+    lineManager: 'Nathaniel Desire',
+    status: 'ACTIVE',
+    bankName: 'First Bank',
+    accountName: 'Kemi Jakada',
+    accountNumber: '5544332211',
+    salary: 450000,
+    taxId: 'TIN-NG-456789',
+    bvn: '22567890123',
+    payrollStatus: 'Active',
+  },
+};
+
 // ─── Constants ────────────────────────────────────────────────────────────────
 const TABS = [
   { key: 'personal', label: 'Personal Information' },
@@ -81,15 +200,50 @@ function FieldRow({ icon: Icon, label, value }) {
 // ─── Salary Breakdown Modal ───────────────────────────────────────────────────
 function SalaryBreakdownModal({ open, onOpenChange }) {
   const earnings = [
-    { component: 'Basic Salary', taxable: 'Yes 15%', monthly: '₦145,000', annual: '₦145,000' },
-    { component: 'Housing Allowance', taxable: 'Yes 15%', monthly: '₦145,000', annual: '₦145,000' },
-    { component: 'Transport Allowance', taxable: 'Yes 15%', monthly: '₦145,000', annual: '₦145,000' },
-    { component: 'Utility Allowance', taxable: 'Yes 15%', monthly: '₦145,000', annual: '₦145,000' },
+    {
+      component: 'Basic Salary',
+      taxable: 'Yes 15%',
+      monthly: '₦145,000',
+      annual: '₦145,000',
+    },
+    {
+      component: 'Housing Allowance',
+      taxable: 'Yes 15%',
+      monthly: '₦145,000',
+      annual: '₦145,000',
+    },
+    {
+      component: 'Transport Allowance',
+      taxable: 'Yes 15%',
+      monthly: '₦145,000',
+      annual: '₦145,000',
+    },
+    {
+      component: 'Utility Allowance',
+      taxable: 'Yes 15%',
+      monthly: '₦145,000',
+      annual: '₦145,000',
+    },
   ];
   const deductions = [
-    { component: 'Employer Pension (10%)', taxable: 'No', monthly: '₦145,000', annual: '₦145,000' },
-    { component: 'PAYE Tax', taxable: 'No', monthly: '₦145,000', annual: '₦145,000' },
-    { component: 'NHF Contribution', taxable: 'No', monthly: '₦145,000', annual: '₦145,000' },
+    {
+      component: 'Employer Pension (10%)',
+      taxable: 'No',
+      monthly: '₦145,000',
+      annual: '₦145,000',
+    },
+    {
+      component: 'PAYE Tax',
+      taxable: 'No',
+      monthly: '₦145,000',
+      annual: '₦145,000',
+    },
+    {
+      component: 'NHF Contribution',
+      taxable: 'No',
+      monthly: '₦145,000',
+      annual: '₦145,000',
+    },
   ];
 
   return (
@@ -102,11 +256,15 @@ function SalaryBreakdownModal({ open, onOpenChange }) {
           <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-[#254C00]">
             <BanknoteIcon className="size-5 text-white" />
           </div>
-          <DialogTitle className="text-xl font-semibold">Salary Breakdown</DialogTitle>
+          <DialogTitle className="text-xl font-semibold">
+            Salary Breakdown
+          </DialogTitle>
         </DialogHeader>
 
         <div className="mt-5 space-y-5">
-          <h4 className="text-sm font-semibold text-gray-800">Salary Components</h4>
+          <h4 className="text-sm font-semibold text-gray-800">
+            Salary Components
+          </h4>
 
           {/* Earnings */}
           <div>
@@ -123,10 +281,16 @@ function SalaryBreakdownModal({ open, onOpenChange }) {
               <tbody>
                 {earnings.map((row, i) => (
                   <tr key={i} className="border-t border-gray-50">
-                    <td className="py-1.5 font-semibold text-gray-800">{row.component}</td>
+                    <td className="py-1.5 font-semibold text-gray-800">
+                      {row.component}
+                    </td>
                     <td className="py-1.5 text-gray-600">{row.taxable}</td>
-                    <td className="py-1.5 font-semibold text-gray-800">{row.monthly}</td>
-                    <td className="py-1.5 font-semibold text-gray-800">{row.annual}</td>
+                    <td className="py-1.5 font-semibold text-gray-800">
+                      {row.monthly}
+                    </td>
+                    <td className="py-1.5 font-semibold text-gray-800">
+                      {row.annual}
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -148,10 +312,16 @@ function SalaryBreakdownModal({ open, onOpenChange }) {
               <tbody>
                 {deductions.map((row, i) => (
                   <tr key={i} className="border-t border-gray-50">
-                    <td className="py-1.5 font-semibold text-gray-800">{row.component}</td>
+                    <td className="py-1.5 font-semibold text-gray-800">
+                      {row.component}
+                    </td>
                     <td className="py-1.5 text-gray-600">{row.taxable}</td>
-                    <td className="py-1.5 font-semibold text-gray-800">{row.monthly}</td>
-                    <td className="py-1.5 font-semibold text-gray-800">{row.annual}</td>
+                    <td className="py-1.5 font-semibold text-gray-800">
+                      {row.monthly}
+                    </td>
+                    <td className="py-1.5 font-semibold text-gray-800">
+                      {row.annual}
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -160,7 +330,9 @@ function SalaryBreakdownModal({ open, onOpenChange }) {
 
           {/* Compensation Summary */}
           <div>
-            <p className="mb-2 text-xs font-semibold text-[#6C2BD9]">Compensation Summary</p>
+            <p className="mb-2 text-xs font-semibold text-[#6C2BD9]">
+              Compensation Summary
+            </p>
             <table className="w-full text-sm">
               <thead>
                 <tr className="text-left text-xs text-gray-400">
@@ -172,16 +344,30 @@ function SalaryBreakdownModal({ open, onOpenChange }) {
               </thead>
               <tbody>
                 <tr className="border-t border-gray-50">
-                  <td className="py-1.5 font-semibold text-gray-800">Monthly</td>
-                  <td className="py-1.5 font-semibold text-gray-800">₦200,000</td>
-                  <td className="py-1.5 font-semibold text-red-500">-₦12,000</td>
-                  <td className="py-1.5 font-semibold text-green-600">₦188,000</td>
+                  <td className="py-1.5 font-semibold text-gray-800">
+                    Monthly
+                  </td>
+                  <td className="py-1.5 font-semibold text-gray-800">
+                    ₦200,000
+                  </td>
+                  <td className="py-1.5 font-semibold text-red-500">
+                    -₦12,000
+                  </td>
+                  <td className="py-1.5 font-semibold text-green-600">
+                    ₦188,000
+                  </td>
                 </tr>
                 <tr className="border-t border-gray-50">
                   <td className="py-1.5 font-semibold text-gray-800">Annual</td>
-                  <td className="py-1.5 font-semibold text-gray-800">₦2,400,000</td>
-                  <td className="py-1.5 font-semibold text-red-500">-₦144,000</td>
-                  <td className="py-1.5 font-semibold text-green-600">₦2,256,000</td>
+                  <td className="py-1.5 font-semibold text-gray-800">
+                    ₦2,400,000
+                  </td>
+                  <td className="py-1.5 font-semibold text-red-500">
+                    -₦144,000
+                  </td>
+                  <td className="py-1.5 font-semibold text-green-600">
+                    ₦2,256,000
+                  </td>
                 </tr>
               </tbody>
             </table>
@@ -259,55 +445,89 @@ export default function EmployeeDetail() {
     payrollStatus: 'Active',
   });
 
+  function applyEmployeeToState(emp) {
+    setEmployee(emp);
+    setPersonalForm({
+      employeeId: emp.employeeId || emp._id || '',
+      name: `${emp.firstName || ''} ${emp.lastName || ''}`.trim(),
+      email: emp.email || '',
+      phone: emp.phoneNumber || emp.phone || '',
+      gender: emp.gender || '',
+      dateOfBirth: emp.dateOfBirth ? new Date(emp.dateOfBirth) : null,
+      department: emp.departmentName || emp.department || '',
+      employmentType:
+        emp.employmentType === 'FULL_TIME'
+          ? 'Full-time'
+          : emp.employmentType === 'PART_TIME'
+            ? 'Part-time'
+            : emp.employmentType === 'CONTRACT'
+              ? 'Contract'
+              : emp.employmentType === 'INTERN'
+                ? 'Intern'
+                : emp.employmentType || '',
+      jobTitle: emp.positionTitle || emp.position || '',
+      homeAddress: emp.address?.address1 || emp.homeAddress || '',
+      startDate: emp.hireDate ? new Date(emp.hireDate) : null,
+      lineManager: emp.lineManager || '',
+    });
+    setPayrollForm({
+      bankName: emp.bankName || '',
+      accountName: emp.accountName || '',
+      accountNumber: emp.accountNumber || '',
+      salaryAmount: emp.salary ? `₦${Number(emp.salary).toLocaleString()}` : '',
+      taxId: emp.taxId || '',
+      bvn: emp.bvn || '',
+      payrollStatus: emp.payrollStatus || 'Active',
+    });
+  }
+
   useEffect(() => {
     if (!id) return;
     async function fetchData() {
       try {
         setIsLoading(true);
+
+        if (USE_MOCK_FOR_TESTING && MOCK_EMPLOYEES_BY_ID[id]) {
+          const mockEmp = MOCK_EMPLOYEES_BY_ID[id];
+          setDepartments([
+            { id: 'eng', name: 'Engineering' },
+            { id: 'sales', name: 'Sales' },
+            { id: 'marketing', name: 'Marketing' },
+            { id: 'hr', name: 'Human Resources' },
+            { id: 'finance', name: 'Finance' },
+          ]);
+          applyEmployeeToState(mockEmp);
+          setUploadedDocs([
+            { id: 'doc-1', name: 'ID_Card.pdf', category: 'Personal' },
+            { id: 'doc-2', name: 'Resume.pdf', category: 'Personal' },
+            { id: 'doc-3', name: 'Offer_Letter.pdf', category: 'Employment' },
+            { id: 'doc-4', name: 'Bank_Details.pdf', category: 'Payroll' },
+          ]);
+          setIsLoading(false);
+          return;
+        }
+
         const [empRes, deptRes] = await Promise.all([
           EmployeeService.get({ id }),
           EmployeeService.getDepartments(),
         ]);
         const emp = empRes.data?.data || empRes.data || {};
-        setEmployee(emp);
         setDepartments(deptRes.data?.data || []);
-
-        setPersonalForm({
-          employeeId: emp.employeeId || emp._id || '',
-          name: `${emp.firstName || ''} ${emp.lastName || ''}`.trim(),
-          email: emp.email || '',
-          phone: emp.phoneNumber || emp.phone || '',
-          gender: emp.gender || '',
-          dateOfBirth: emp.dateOfBirth ? new Date(emp.dateOfBirth) : null,
-          department: emp.departmentName || emp.department || '',
-          employmentType:
-            emp.employmentType === 'FULL_TIME'
-              ? 'Full-time'
-              : emp.employmentType === 'PART_TIME'
-                ? 'Part-time'
-                : emp.employmentType === 'CONTRACT'
-                  ? 'Contract'
-                  : emp.employmentType === 'INTERN'
-                    ? 'Intern'
-                    : emp.employmentType || '',
-          jobTitle: emp.positionTitle || emp.position || '',
-          homeAddress: emp.address?.address1 || emp.homeAddress || '',
-          startDate: emp.hireDate ? new Date(emp.hireDate) : null,
-          lineManager: emp.lineManager || '',
-        });
-
-        setPayrollForm({
-          bankName: emp.bankName || '',
-          accountName: emp.accountName || '',
-          accountNumber: emp.accountNumber || '',
-          salaryAmount: emp.salary ? `₦${Number(emp.salary).toLocaleString()}` : '',
-          taxId: emp.taxId || '',
-          bvn: emp.bvn || '',
-          payrollStatus: emp.payrollStatus || 'Active',
-        });
+        applyEmployeeToState(emp);
       } catch (err) {
         console.error('Error fetching employee:', err);
-        toast.error('Failed to load employee data');
+        if (MOCK_EMPLOYEES_BY_ID[id]) {
+          setDepartments([
+            { id: 'eng', name: 'Engineering' },
+            { id: 'sales', name: 'Sales' },
+            { id: 'marketing', name: 'Marketing' },
+            { id: 'hr', name: 'Human Resources' },
+            { id: 'finance', name: 'Finance' },
+          ]);
+          applyEmployeeToState(MOCK_EMPLOYEES_BY_ID[id]);
+        } else {
+          toast.error('Failed to load employee data');
+        }
       } finally {
         setIsLoading(false);
       }
@@ -362,7 +582,8 @@ export default function EmployeeDetail() {
           bankName: payrollForm.bankName,
           accountName: payrollForm.accountName,
           accountNumber: payrollForm.accountNumber,
-          salary: parseFloat(payrollForm.salaryAmount.replace(/[₦,]/g, '')) || 0,
+          salary:
+            parseFloat(payrollForm.salaryAmount.replace(/[₦,]/g, '')) || 0,
           taxId: payrollForm.taxId,
           bvn: payrollForm.bvn,
           payrollStatus: payrollForm.payrollStatus,
@@ -434,7 +655,9 @@ export default function EmployeeDetail() {
     if (isEditing) {
       return (
         <Button
-          onClick={activeTab === 'personal' ? handleSavePersonal : handleSavePayroll}
+          onClick={
+            activeTab === 'personal' ? handleSavePersonal : handleSavePayroll
+          }
           disabled={isSaving}
           className="h-10 gap-2 rounded-lg bg-[#6C2BD9] px-5 text-sm font-medium text-white hover:bg-[#5A23B8]"
         >
@@ -446,9 +669,39 @@ export default function EmployeeDetail() {
     return (
       <Button
         onClick={() => setIsEditing(true)}
-        className="h-10 gap-2 rounded-lg bg-[#6C2BD9] px-5 text-sm font-medium text-white hover:bg-[#5A23B8]"
+        className="font-family-raleway h-10 gap-2 rounded-[16px] bg-[#3300C9] px-5 text-[14px] leading-[24px] font-semibold text-white hover:bg-[#5A23B8]"
       >
-        <PencilIcon className="size-4" />
+        <svg
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M11 2H9C4 2 2 4 2 9V15C2 20 4 22 9 22H15C20 22 22 20 22 15V13"
+            stroke="white"
+            stroke-width="1.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+          <path
+            d="M16.0399 3.02123L8.15988 10.9012C7.85988 11.2012 7.55988 11.7912 7.49988 12.2212L7.06988 15.2312C6.90988 16.3212 7.67988 17.0812 8.76988 16.9312L11.7799 16.5012C12.1999 16.4412 12.7899 16.1412 13.0999 15.8412L20.9799 7.96123C22.3399 6.60123 22.9799 5.02123 20.9799 3.02123C18.9799 1.02123 17.3999 1.66123 16.0399 3.02123Z"
+            stroke="white"
+            stroke-width="1.5"
+            stroke-miterlimit="10"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+          <path
+            d="M14.9102 4.14844C15.5802 6.53844 17.4502 8.40844 19.8502 9.08844"
+            stroke="white"
+            stroke-width="1.5"
+            stroke-miterlimit="10"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
         Edit Profile
       </Button>
     );
@@ -457,11 +710,21 @@ export default function EmployeeDetail() {
   // ── Personal Info Tab ─────────────────────────────────────────────────────
   const renderPersonalView = () => (
     <div className="mt-4 rounded-xl border border-gray-100 bg-white p-6">
-      <h3 className="text-base font-semibold text-gray-900">Personal Information</h3>
+      <h3 className="text-base font-semibold text-gray-900">
+        Personal Information
+      </h3>
       <div className="mt-6 grid grid-cols-3 gap-x-8 gap-y-6">
-        <FieldRow icon={CreditCardIcon} label="Employee ID" value={personalForm.employeeId} />
+        <FieldRow
+          icon={CreditCardIcon}
+          label="Employee ID"
+          value={personalForm.employeeId}
+        />
         <FieldRow icon={UserIcon} label="Name" value={personalForm.name} />
-        <FieldRow icon={MailIcon} label="Email Address" value={personalForm.email} />
+        <FieldRow
+          icon={MailIcon}
+          label="Email Address"
+          value={personalForm.email}
+        />
         <FieldRow icon={PhoneIcon} label="Phone" value={personalForm.phone} />
         <FieldRow icon={UserIcon} label="Gender" value={personalForm.gender} />
         <FieldRow
@@ -473,10 +736,26 @@ export default function EmployeeDetail() {
               : '-'
           }
         />
-        <FieldRow icon={BriefcaseIcon} label="Job Title" value={personalForm.jobTitle} />
-        <FieldRow icon={BuildingIcon} label="Department" value={personalForm.department} />
-        <FieldRow icon={ClockIcon} label="Employment Type" value={personalForm.employmentType} />
-        <FieldRow icon={MapPinIcon} label="Home Address" value={personalForm.homeAddress} />
+        <FieldRow
+          icon={BriefcaseIcon}
+          label="Job Title"
+          value={personalForm.jobTitle}
+        />
+        <FieldRow
+          icon={BuildingIcon}
+          label="Department"
+          value={personalForm.department}
+        />
+        <FieldRow
+          icon={ClockIcon}
+          label="Employment Type"
+          value={personalForm.employmentType}
+        />
+        <FieldRow
+          icon={MapPinIcon}
+          label="Home Address"
+          value={personalForm.homeAddress}
+        />
         <FieldRow
           icon={CalendarIcon}
           label="Start Date"
@@ -486,19 +765,31 @@ export default function EmployeeDetail() {
               : '-'
           }
         />
-        <FieldRow icon={UserIcon} label="Line Manager" value={personalForm.lineManager} />
+        <FieldRow
+          icon={UserIcon}
+          label="Line Manager"
+          value={personalForm.lineManager}
+        />
       </div>
     </div>
   );
 
   const renderPersonalEdit = () => (
     <div className="mt-4 rounded-xl border border-gray-100 bg-white p-6">
-      <h3 className="text-base font-semibold text-gray-900">Personal Information</h3>
+      <h3 className="text-base font-semibold text-gray-900">
+        Personal Information
+      </h3>
       <div className="mt-6 grid grid-cols-3 gap-x-6 gap-y-5">
         {/* Employee ID — read-only */}
         <div className="space-y-1.5">
-          <label className="text-xs font-medium text-gray-700">Employee ID</label>
-          <Input value={personalForm.employeeId} disabled className="h-11 bg-gray-50" />
+          <label className="text-xs font-medium text-gray-700">
+            Employee ID
+          </label>
+          <Input
+            value={personalForm.employeeId}
+            disabled
+            className="h-11 bg-gray-50"
+          />
         </div>
 
         {/* Name */}
@@ -507,19 +798,25 @@ export default function EmployeeDetail() {
           <Input
             placeholder="e.g. John Doe"
             value={personalForm.name}
-            onChange={(e) => setPersonalForm((p) => ({ ...p, name: e.target.value }))}
+            onChange={(e) =>
+              setPersonalForm((p) => ({ ...p, name: e.target.value }))
+            }
             className="h-11"
           />
         </div>
 
         {/* Email */}
         <div className="space-y-1.5">
-          <label className="text-xs font-medium text-gray-700">Email Address</label>
+          <label className="text-xs font-medium text-gray-700">
+            Email Address
+          </label>
           <Input
             type="email"
             placeholder="e.g. hammedadeyanju75@gmail.com"
             value={personalForm.email}
-            onChange={(e) => setPersonalForm((p) => ({ ...p, email: e.target.value }))}
+            onChange={(e) =>
+              setPersonalForm((p) => ({ ...p, email: e.target.value }))
+            }
             className="h-11"
           />
         </div>
@@ -530,7 +827,9 @@ export default function EmployeeDetail() {
           <Input
             placeholder="e.g +2349068114071"
             value={personalForm.phone}
-            onChange={(e) => setPersonalForm((p) => ({ ...p, phone: e.target.value }))}
+            onChange={(e) =>
+              setPersonalForm((p) => ({ ...p, phone: e.target.value }))
+            }
             className="h-11"
           />
         </div>
@@ -540,7 +839,9 @@ export default function EmployeeDetail() {
           <label className="text-xs font-medium text-gray-700">Gender</label>
           <Select
             value={personalForm.gender}
-            onValueChange={(val) => setPersonalForm((p) => ({ ...p, gender: val }))}
+            onValueChange={(val) =>
+              setPersonalForm((p) => ({ ...p, gender: val }))
+            }
           >
             <SelectTrigger className="h-11">
               <SelectValue placeholder="Select gender" />
@@ -555,14 +856,16 @@ export default function EmployeeDetail() {
 
         {/* Date of Birth */}
         <div className="space-y-1.5">
-          <label className="text-xs font-medium text-gray-700">Date of Birth</label>
+          <label className="text-xs font-medium text-gray-700">
+            Date of Birth
+          </label>
           <Popover open={dobOpen} onOpenChange={setDobOpen}>
             <PopoverTrigger asChild>
               <Button
                 variant="outline"
                 className={cn(
                   'h-11 w-full justify-start text-left font-normal',
-                  !personalForm.dateOfBirth && 'text-muted-foreground',
+                  !personalForm.dateOfBirth && 'text-muted-foreground'
                 )}
               >
                 {personalForm.dateOfBirth
@@ -588,10 +891,14 @@ export default function EmployeeDetail() {
 
         {/* Department */}
         <div className="space-y-1.5">
-          <label className="text-xs font-medium text-gray-700">Department</label>
+          <label className="text-xs font-medium text-gray-700">
+            Department
+          </label>
           <Select
             value={personalForm.department}
-            onValueChange={(val) => setPersonalForm((p) => ({ ...p, department: val }))}
+            onValueChange={(val) =>
+              setPersonalForm((p) => ({ ...p, department: val }))
+            }
           >
             <SelectTrigger className="h-11">
               <SelectValue placeholder="Select department" />
@@ -608,7 +915,9 @@ export default function EmployeeDetail() {
                   <SelectItem value="Engineering">Engineering</SelectItem>
                   <SelectItem value="Sales">Sales</SelectItem>
                   <SelectItem value="Marketing">Marketing</SelectItem>
-                  <SelectItem value="Human Resources">Human Resources</SelectItem>
+                  <SelectItem value="Human Resources">
+                    Human Resources
+                  </SelectItem>
                   <SelectItem value="Finance">Finance</SelectItem>
                 </>
               )}
@@ -618,10 +927,14 @@ export default function EmployeeDetail() {
 
         {/* Employment Type */}
         <div className="space-y-1.5">
-          <label className="text-xs font-medium text-gray-700">Employment Type</label>
+          <label className="text-xs font-medium text-gray-700">
+            Employment Type
+          </label>
           <Select
             value={personalForm.employmentType}
-            onValueChange={(val) => setPersonalForm((p) => ({ ...p, employmentType: val }))}
+            onValueChange={(val) =>
+              setPersonalForm((p) => ({ ...p, employmentType: val }))
+            }
           >
             <SelectTrigger className="h-11">
               <SelectValue placeholder="Select type" />
@@ -641,32 +954,40 @@ export default function EmployeeDetail() {
           <Input
             placeholder="e.g Senior Software Engineer"
             value={personalForm.jobTitle}
-            onChange={(e) => setPersonalForm((p) => ({ ...p, jobTitle: e.target.value }))}
+            onChange={(e) =>
+              setPersonalForm((p) => ({ ...p, jobTitle: e.target.value }))
+            }
             className="h-11"
           />
         </div>
 
         {/* Home Address */}
         <div className="space-y-1.5">
-          <label className="text-xs font-medium text-gray-700">Home Address</label>
+          <label className="text-xs font-medium text-gray-700">
+            Home Address
+          </label>
           <Input
             placeholder="e.g Lagos, Nigeria"
             value={personalForm.homeAddress}
-            onChange={(e) => setPersonalForm((p) => ({ ...p, homeAddress: e.target.value }))}
+            onChange={(e) =>
+              setPersonalForm((p) => ({ ...p, homeAddress: e.target.value }))
+            }
             className="h-11"
           />
         </div>
 
         {/* Start Date */}
         <div className="space-y-1.5">
-          <label className="text-xs font-medium text-gray-700">Start Date</label>
+          <label className="text-xs font-medium text-gray-700">
+            Start Date
+          </label>
           <Popover open={startDateOpen} onOpenChange={setStartDateOpen}>
             <PopoverTrigger asChild>
               <Button
                 variant="outline"
                 className={cn(
                   'h-11 w-full justify-start text-left font-normal',
-                  !personalForm.startDate && 'text-muted-foreground',
+                  !personalForm.startDate && 'text-muted-foreground'
                 )}
               >
                 {personalForm.startDate
@@ -691,11 +1012,15 @@ export default function EmployeeDetail() {
 
         {/* Line Manager */}
         <div className="space-y-1.5">
-          <label className="text-xs font-medium text-gray-700">Line Manager</label>
+          <label className="text-xs font-medium text-gray-700">
+            Line Manager
+          </label>
           <Input
             placeholder="e.g. John Doe"
             value={personalForm.lineManager}
-            onChange={(e) => setPersonalForm((p) => ({ ...p, lineManager: e.target.value }))}
+            onChange={(e) =>
+              setPersonalForm((p) => ({ ...p, lineManager: e.target.value }))
+            }
             className="h-11"
           />
         </div>
@@ -745,7 +1070,11 @@ export default function EmployeeDetail() {
           label="Tax ID"
           value={payrollForm.taxId || '123-45-6789'}
         />
-        <FieldRow icon={WalletIcon} label="BVN" value={payrollForm.bvn || '123-45-6789'} />
+        <FieldRow
+          icon={WalletIcon}
+          label="BVN"
+          value={payrollForm.bvn || '123-45-6789'}
+        />
 
         {/* Payroll Status */}
         <div className="space-y-1.5">
@@ -755,7 +1084,7 @@ export default function EmployeeDetail() {
               'inline-flex items-center rounded-full px-3 py-1 text-xs font-medium',
               payrollForm.payrollStatus === 'Active'
                 ? 'bg-green-50 text-green-700'
-                : 'bg-gray-100 text-gray-600',
+                : 'bg-gray-100 text-gray-600'
             )}
           >
             {payrollForm.payrollStatus || 'Active'}
@@ -774,34 +1103,48 @@ export default function EmployeeDetail() {
           <Input
             placeholder="e.g. First Bank Plc"
             value={payrollForm.bankName}
-            onChange={(e) => setPayrollForm((p) => ({ ...p, bankName: e.target.value }))}
+            onChange={(e) =>
+              setPayrollForm((p) => ({ ...p, bankName: e.target.value }))
+            }
             className="h-11"
           />
         </div>
         <div className="space-y-1.5">
-          <label className="text-xs font-medium text-gray-700">Account Name</label>
+          <label className="text-xs font-medium text-gray-700">
+            Account Name
+          </label>
           <Input
             placeholder="e.g. Hammed Adeyanju"
             value={payrollForm.accountName}
-            onChange={(e) => setPayrollForm((p) => ({ ...p, accountName: e.target.value }))}
+            onChange={(e) =>
+              setPayrollForm((p) => ({ ...p, accountName: e.target.value }))
+            }
             className="h-11"
           />
         </div>
         <div className="space-y-1.5">
-          <label className="text-xs font-medium text-gray-700">Account Number</label>
+          <label className="text-xs font-medium text-gray-700">
+            Account Number
+          </label>
           <Input
             placeholder="e.g .... .... .... 4589"
             value={payrollForm.accountNumber}
-            onChange={(e) => setPayrollForm((p) => ({ ...p, accountNumber: e.target.value }))}
+            onChange={(e) =>
+              setPayrollForm((p) => ({ ...p, accountNumber: e.target.value }))
+            }
             className="h-11"
           />
         </div>
         <div className="space-y-1.5">
-          <label className="text-xs font-medium text-gray-700">Salary Amount</label>
+          <label className="text-xs font-medium text-gray-700">
+            Salary Amount
+          </label>
           <Input
             placeholder="e.g ₦15,000,000"
             value={payrollForm.salaryAmount}
-            onChange={(e) => setPayrollForm((p) => ({ ...p, salaryAmount: e.target.value }))}
+            onChange={(e) =>
+              setPayrollForm((p) => ({ ...p, salaryAmount: e.target.value }))
+            }
             className="h-11"
           />
         </div>
@@ -810,7 +1153,9 @@ export default function EmployeeDetail() {
           <Input
             placeholder="123-45-6789"
             value={payrollForm.taxId}
-            onChange={(e) => setPayrollForm((p) => ({ ...p, taxId: e.target.value }))}
+            onChange={(e) =>
+              setPayrollForm((p) => ({ ...p, taxId: e.target.value }))
+            }
             className="h-11"
           />
         </div>
@@ -819,15 +1164,21 @@ export default function EmployeeDetail() {
           <Input
             placeholder="123-45-6789"
             value={payrollForm.bvn}
-            onChange={(e) => setPayrollForm((p) => ({ ...p, bvn: e.target.value }))}
+            onChange={(e) =>
+              setPayrollForm((p) => ({ ...p, bvn: e.target.value }))
+            }
             className="h-11"
           />
         </div>
         <div className="space-y-1.5">
-          <label className="text-xs font-medium text-gray-700">Payroll Status</label>
+          <label className="text-xs font-medium text-gray-700">
+            Payroll Status
+          </label>
           <Select
             value={payrollForm.payrollStatus}
-            onValueChange={(val) => setPayrollForm((p) => ({ ...p, payrollStatus: val }))}
+            onValueChange={(val) =>
+              setPayrollForm((p) => ({ ...p, payrollStatus: val }))
+            }
           >
             <SelectTrigger className="h-11">
               <SelectValue placeholder="Select status" />
@@ -857,7 +1208,9 @@ export default function EmployeeDetail() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="Personal">Personal</SelectItem>
-            <SelectItem value="Contract of Employment">Contract of Employment</SelectItem>
+            <SelectItem value="Contract of Employment">
+              Contract of Employment
+            </SelectItem>
             <SelectItem value="Certificate">Certificate</SelectItem>
             <SelectItem value="Offer Letter">Offer Letter</SelectItem>
             <SelectItem value="Tax">Tax</SelectItem>
@@ -892,7 +1245,9 @@ export default function EmployeeDetail() {
           <p className="text-sm font-medium text-gray-700">
             Click or drag file to this area to upload
           </p>
-          <p className="mt-1 text-xs text-gray-400">Support for a single or bulk upload.</p>
+          <p className="mt-1 text-xs text-gray-400">
+            Support for a single or bulk upload.
+          </p>
         </div>
         <input
           ref={fileInputRef}
@@ -905,7 +1260,9 @@ export default function EmployeeDetail() {
 
       {/* Uploaded Documents */}
       <div>
-        <h4 className="mb-3 text-sm font-semibold text-gray-800">Uploaded Documents</h4>
+        <h4 className="mb-3 text-sm font-semibold text-gray-800">
+          Uploaded Documents
+        </h4>
         {uploadedDocs.length === 0 ? (
           <div className="rounded-lg border border-gray-100 py-10 text-center">
             <p className="text-sm text-gray-400">No document yet</p>
@@ -922,7 +1279,9 @@ export default function EmployeeDetail() {
                     <FileTextIcon className="size-4 text-red-600" />
                   </div>
                   <div className="min-w-0">
-                    <p className="truncate text-xs font-medium text-gray-800">{doc.name}</p>
+                    <p className="truncate text-xs font-medium text-gray-800">
+                      {doc.name}
+                    </p>
                     <p className="text-xs text-gray-400">{doc.category}</p>
                   </div>
                 </div>
@@ -933,7 +1292,9 @@ export default function EmployeeDetail() {
                   <button
                     className="text-gray-400 hover:text-red-500"
                     onClick={() =>
-                      setUploadedDocs((prev) => prev.filter((d) => d.id !== doc.id))
+                      setUploadedDocs((prev) =>
+                        prev.filter((d) => d.id !== doc.id)
+                      )
                     }
                   >
                     <Trash2Icon className="size-3.5" />
@@ -965,7 +1326,7 @@ export default function EmployeeDetail() {
           <span
             key={tab.key}
             onClick={() => handleTabChange(tab.key)}
-            className={`cursor-pointer text-nowrap pb-2.5 text-xs font-bold transition-colors ${
+            className={`cursor-pointer pb-2.5 text-xs font-bold text-nowrap transition-colors ${
               activeTab === tab.key
                 ? 'border-primary text-primary border-b-2'
                 : 'text-gray-600 hover:text-gray-900'
@@ -987,11 +1348,14 @@ export default function EmployeeDetail() {
         </button>
 
         {/* Employee header card */}
-        <div className="rounded-xl border border-gray-100 bg-white p-6">
-          <div className="flex items-start gap-5">
+        <div className="">
+          <div className="flex items-center gap-5">
             {/* Avatar */}
-            <Avatar className="size-20 shrink-0 ring-2 ring-purple-100">
-              <AvatarImage src={employee?.avatarUrl || employee?.photo} alt={displayName} />
+            <Avatar className="size-[140px] shrink-0 ring-2 ring-purple-100">
+              <AvatarImage
+                src={employee?.avatarUrl || employee?.photo}
+                alt={displayName}
+              />
               <AvatarFallback className="bg-purple-100 text-lg font-semibold text-purple-700">
                 {initials || 'EE'}
               </AvatarFallback>
@@ -999,18 +1363,22 @@ export default function EmployeeDetail() {
 
             {/* Name & info */}
             <div className="flex-1">
-              <h2 className="text-xl font-bold text-gray-900">{displayName || '—'}</h2>
-              <p className="mt-0.5 text-sm text-gray-500">{displayJobTitle}</p>
+              <h2 className="text-base font-semibold text-[#000000]">
+                {displayName || '—'}
+              </h2>
+              <p className="mt-0.5 text-sm text-[14px] text-[#434343]">
+                {displayJobTitle}
+              </p>
               <div className="mt-2 flex flex-wrap items-center gap-5 text-sm text-gray-500">
                 {displayDept && (
                   <span className="flex items-center gap-1.5">
-                    <BriefcaseIcon className="size-4 text-gray-400" />
+                    <BriefcaseIcon className="size-4 text-[#434343]" />
                     {displayDept}
                   </span>
                 )}
                 {displayDate && (
                   <span className="flex items-center gap-1.5">
-                    <CalendarIcon className="size-4 text-gray-400" />
+                    <CalendarIcon className="size-4 text-[#434343]" />
                     {displayDate}
                   </span>
                 )}
@@ -1022,7 +1390,7 @@ export default function EmployeeDetail() {
               <span
                 className={cn(
                   'rounded-full px-3 py-1 text-xs font-medium',
-                  STATUS_STYLES[displayStatus],
+                  STATUS_STYLES[displayStatus]
                 )}
               >
                 {displayStatus}
