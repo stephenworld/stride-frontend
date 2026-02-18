@@ -23,8 +23,6 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import {
-  ArrowLeftIcon,
-  CalendarIcon,
   BriefcaseIcon,
   BuildingIcon,
   UserIcon,
@@ -32,20 +30,25 @@ import {
   PhoneIcon,
   MapPinIcon,
   SaveIcon,
-  PencilIcon,
   LandmarkIcon,
   CreditCardIcon,
   BanknoteIcon,
   FileTextIcon,
   WalletIcon,
   UploadCloudIcon,
-  EyeIcon,
-  Trash2Icon,
   DownloadIcon,
   ArrowUpRightIcon,
   InboxIcon,
   ClockIcon,
 } from 'lucide-react';
+import {
+  AddIcon,
+  ArrowLeftIcon,
+  EyeIcon,
+  EditIcon,
+  DeleteIcon,
+  DateIcon,
+} from '@/components/ui/svgs';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import EmployeeService from '@/api/employee';
@@ -183,6 +186,14 @@ const STATUS_STYLES = {
   'On Leave': 'bg-yellow-50 text-yellow-700 border border-yellow-200',
   Terminated: 'bg-red-50 text-red-700 border border-red-200',
 };
+
+// Edit form input/select style: full width, 44px height, 8px radius, 1px border, padding 10px 12px
+const EDIT_FIELD_CLASS =
+  'h-[44px] w-full rounded-[8px] border border-input py-[10px] px-3';
+
+// White content card: ~90% of container height so the bg fills most of the page
+const WHITE_CARD_CLASS =
+  'mt-4 min-h-[90vh] rounded-xl border border-gray-100 bg-white p-6';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 function FieldRow({ icon: Icon, label, value }) {
@@ -413,6 +424,16 @@ export default function EmployeeDetail() {
   const [departments, setDepartments] = useState([]);
   const [docCategory, setDocCategory] = useState('');
   const [uploadedDocs, setUploadedDocs] = useState([]);
+  const [documentCategories, setDocumentCategories] = useState([
+    'Personal',
+    'Offer Letter',
+    'Tax',
+    'Contract of Employment',
+    'Certificate',
+    'Others',
+  ]);
+  const [newCategoryInput, setNewCategoryInput] = useState('');
+  const [showAddCategoryForm, setShowAddCategoryForm] = useState(false);
 
   // Date picker popovers
   const [dobOpen, setDobOpen] = useState(false);
@@ -645,7 +666,7 @@ export default function EmployeeDetail() {
       return (
         <Button
           onClick={() => fileInputRef.current?.click()}
-          className="h-10 gap-2 rounded-lg bg-[#6C2BD9] px-5 text-sm font-medium text-white hover:bg-[#5A23B8]"
+          className="font-raleway h-10 gap-2 rounded-[16px] bg-[#3300C9] px-5 text-[14px] leading-6 font-semibold text-white hover:bg-[#5A23B8]"
         >
           <UploadCloudIcon className="size-4" />
           Upload Document
@@ -659,7 +680,7 @@ export default function EmployeeDetail() {
             activeTab === 'personal' ? handleSavePersonal : handleSavePayroll
           }
           disabled={isSaving}
-          className="h-10 gap-2 rounded-lg bg-[#6C2BD9] px-5 text-sm font-medium text-white hover:bg-[#5A23B8]"
+          className="font-raleway h-10 gap-2 rounded-[16px] bg-[#3300C9] px-5 text-[14px] leading-6 font-semibold text-white hover:bg-[#5A23B8]"
         >
           <SaveIcon className="size-4" />
           {isSaving ? 'Saving...' : 'Save Changes'}
@@ -709,11 +730,11 @@ export default function EmployeeDetail() {
 
   // ── Personal Info Tab ─────────────────────────────────────────────────────
   const renderPersonalView = () => (
-    <div className="mt-4 rounded-xl border border-gray-100 bg-white p-6">
+    <div className={WHITE_CARD_CLASS}>
       <h3 className="text-base font-semibold text-gray-900">
         Personal Information
       </h3>
-      <div className="mt-6 grid grid-cols-3 gap-x-8 gap-y-6">
+      <div className="mt-6 grid grid-cols-3 gap-[30px]">
         <FieldRow
           icon={CreditCardIcon}
           label="Employee ID"
@@ -728,7 +749,7 @@ export default function EmployeeDetail() {
         <FieldRow icon={PhoneIcon} label="Phone" value={personalForm.phone} />
         <FieldRow icon={UserIcon} label="Gender" value={personalForm.gender} />
         <FieldRow
-          icon={CalendarIcon}
+          icon={DateIcon}
           label="Date of Birth"
           value={
             personalForm.dateOfBirth
@@ -757,7 +778,7 @@ export default function EmployeeDetail() {
           value={personalForm.homeAddress}
         />
         <FieldRow
-          icon={CalendarIcon}
+          icon={DateIcon}
           label="Start Date"
           value={
             personalForm.startDate
@@ -775,11 +796,11 @@ export default function EmployeeDetail() {
   );
 
   const renderPersonalEdit = () => (
-    <div className="mt-4 rounded-xl border border-gray-100 bg-white p-6">
+    <div className={WHITE_CARD_CLASS}>
       <h3 className="text-base font-semibold text-gray-900">
         Personal Information
       </h3>
-      <div className="mt-6 grid grid-cols-3 gap-x-6 gap-y-5">
+      <div className="mt-6 grid grid-cols-3 gap-[30px]">
         {/* Employee ID — read-only */}
         <div className="space-y-1.5">
           <label className="text-xs font-medium text-gray-700">
@@ -788,7 +809,7 @@ export default function EmployeeDetail() {
           <Input
             value={personalForm.employeeId}
             disabled
-            className="h-11 bg-gray-50"
+            className={cn(EDIT_FIELD_CLASS, 'bg-gray-50')}
           />
         </div>
 
@@ -801,7 +822,7 @@ export default function EmployeeDetail() {
             onChange={(e) =>
               setPersonalForm((p) => ({ ...p, name: e.target.value }))
             }
-            className="h-11"
+            className={EDIT_FIELD_CLASS}
           />
         </div>
 
@@ -817,7 +838,7 @@ export default function EmployeeDetail() {
             onChange={(e) =>
               setPersonalForm((p) => ({ ...p, email: e.target.value }))
             }
-            className="h-11"
+            className={EDIT_FIELD_CLASS}
           />
         </div>
 
@@ -830,7 +851,7 @@ export default function EmployeeDetail() {
             onChange={(e) =>
               setPersonalForm((p) => ({ ...p, phone: e.target.value }))
             }
-            className="h-11"
+            className={EDIT_FIELD_CLASS}
           />
         </div>
 
@@ -843,7 +864,7 @@ export default function EmployeeDetail() {
               setPersonalForm((p) => ({ ...p, gender: val }))
             }
           >
-            <SelectTrigger className="h-11">
+            <SelectTrigger className={EDIT_FIELD_CLASS}>
               <SelectValue placeholder="Select gender" />
             </SelectTrigger>
             <SelectContent>
@@ -864,14 +885,15 @@ export default function EmployeeDetail() {
               <Button
                 variant="outline"
                 className={cn(
-                  'h-11 w-full justify-start text-left font-normal',
+                  EDIT_FIELD_CLASS,
+                  'w-full justify-start text-left font-normal',
                   !personalForm.dateOfBirth && 'text-muted-foreground'
                 )}
               >
                 {personalForm.dateOfBirth
                   ? format(personalForm.dateOfBirth, 'dd/MM/yyyy')
                   : 'Pick a date'}
-                <CalendarIcon className="ml-auto size-4 opacity-50" />
+                <DateIcon className="ml-auto size-4 opacity-50" />
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0" align="start">
@@ -900,7 +922,7 @@ export default function EmployeeDetail() {
               setPersonalForm((p) => ({ ...p, department: val }))
             }
           >
-            <SelectTrigger className="h-11">
+            <SelectTrigger className={EDIT_FIELD_CLASS}>
               <SelectValue placeholder="Select department" />
             </SelectTrigger>
             <SelectContent>
@@ -936,7 +958,7 @@ export default function EmployeeDetail() {
               setPersonalForm((p) => ({ ...p, employmentType: val }))
             }
           >
-            <SelectTrigger className="h-11">
+            <SelectTrigger className={EDIT_FIELD_CLASS}>
               <SelectValue placeholder="Select type" />
             </SelectTrigger>
             <SelectContent>
@@ -957,7 +979,7 @@ export default function EmployeeDetail() {
             onChange={(e) =>
               setPersonalForm((p) => ({ ...p, jobTitle: e.target.value }))
             }
-            className="h-11"
+            className={EDIT_FIELD_CLASS}
           />
         </div>
 
@@ -972,7 +994,7 @@ export default function EmployeeDetail() {
             onChange={(e) =>
               setPersonalForm((p) => ({ ...p, homeAddress: e.target.value }))
             }
-            className="h-11"
+            className={EDIT_FIELD_CLASS}
           />
         </div>
 
@@ -986,14 +1008,15 @@ export default function EmployeeDetail() {
               <Button
                 variant="outline"
                 className={cn(
-                  'h-11 w-full justify-start text-left font-normal',
+                  EDIT_FIELD_CLASS,
+                  'w-full justify-start text-left font-normal',
                   !personalForm.startDate && 'text-muted-foreground'
                 )}
               >
                 {personalForm.startDate
                   ? format(personalForm.startDate, 'dd/MM/yyyy')
                   : 'Pick a date'}
-                <CalendarIcon className="ml-auto size-4 opacity-50" />
+                <DateIcon className="ml-auto size-4 opacity-50" />
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0" align="start">
@@ -1021,7 +1044,7 @@ export default function EmployeeDetail() {
             onChange={(e) =>
               setPersonalForm((p) => ({ ...p, lineManager: e.target.value }))
             }
-            className="h-11"
+            className={EDIT_FIELD_CLASS}
           />
         </div>
       </div>
@@ -1030,31 +1053,35 @@ export default function EmployeeDetail() {
 
   // ── Payroll Tab ───────────────────────────────────────────────────────────
   const renderPayrollView = () => (
-    <div className="mt-4 rounded-xl border border-gray-100 bg-white p-6">
-      <h3 className="text-base font-semibold text-gray-900">Bank & Payroll</h3>
-      <div className="mt-6 grid grid-cols-3 gap-x-8 gap-y-6">
+    <div className={WHITE_CARD_CLASS}>
+      <h3 className="font-raleway text-base font-semibold text-gray-900">
+        Bank & Payroll
+      </h3>
+      <div className="mt-6 grid grid-cols-3 gap-[30px]">
         <FieldRow
           icon={LandmarkIcon}
           label="Bank Name"
-          value={payrollForm.bankName || 'First Bank Plc'}
+          value={payrollForm.bankName}
         />
         <FieldRow
           icon={UserIcon}
           label="Account Name"
-          value={payrollForm.accountName || 'Hammed Adeyanju'}
+          value={payrollForm.accountName}
         />
         <FieldRow
           icon={CreditCardIcon}
           label="Account Number"
-          value={payrollForm.accountNumber || '.... .... .... 4589'}
+          value={payrollForm.accountNumber}
         />
 
         {/* Monthly Salary with View Breakdown link */}
         <div className="space-y-1.5">
-          <p className="text-xs text-gray-400">Monthly Salary</p>
-          <div className="flex items-center gap-2 text-sm text-gray-800">
+          <p className="font-raleway text-xs font-medium text-gray-400">
+            Monthly Salary
+          </p>
+          <div className="font-raleway flex items-center gap-2 text-sm leading-6 text-gray-800">
             <BanknoteIcon className="size-4 shrink-0 text-gray-400" />
-            <span>{payrollForm.salaryAmount || '₦15,000,000'}</span>
+            <span>{payrollForm.salaryAmount || '—'}</span>
             <button
               onClick={() => setShowSalaryBreakdown(true)}
               className="flex items-center gap-0.5 text-xs font-medium text-[#6C2BD9] hover:underline"
@@ -1068,26 +1095,24 @@ export default function EmployeeDetail() {
         <FieldRow
           icon={FileTextIcon}
           label="Tax ID"
-          value={payrollForm.taxId || '123-45-6789'}
+          value={payrollForm.taxId}
         />
-        <FieldRow
-          icon={WalletIcon}
-          label="BVN"
-          value={payrollForm.bvn || '123-45-6789'}
-        />
+        <FieldRow icon={WalletIcon} label="BVN" value={payrollForm.bvn} />
 
         {/* Payroll Status */}
         <div className="space-y-1.5">
-          <p className="text-xs text-gray-400">Payroll Status</p>
+          <p className="font-raleway text-xs font-medium text-gray-400">
+            Payroll Status
+          </p>
           <span
             className={cn(
-              'inline-flex items-center rounded-full px-3 py-1 text-xs font-medium',
+              'font-raleway inline-flex items-center rounded-full px-3 py-1 text-xs font-medium',
               payrollForm.payrollStatus === 'Active'
                 ? 'bg-green-50 text-green-700'
                 : 'bg-gray-100 text-gray-600'
             )}
           >
-            {payrollForm.payrollStatus || 'Active'}
+            {payrollForm.payrollStatus || '—'}
           </span>
         </div>
       </div>
@@ -1095,22 +1120,26 @@ export default function EmployeeDetail() {
   );
 
   const renderPayrollEdit = () => (
-    <div className="mt-4 rounded-xl border border-gray-100 bg-white p-6">
-      <h3 className="text-base font-semibold text-gray-900">Bank & Payroll</h3>
-      <div className="mt-6 grid grid-cols-3 gap-x-6 gap-y-5">
+    <div className={WHITE_CARD_CLASS}>
+      <h3 className="font-raleway text-base font-semibold text-gray-900">
+        Bank & Payroll
+      </h3>
+      <div className="mt-6 grid grid-cols-3 gap-[30px]">
         <div className="space-y-1.5">
-          <label className="text-xs font-medium text-gray-700">Bank Name</label>
+          <label className="font-raleway text-xs font-medium text-gray-700">
+            Bank Name
+          </label>
           <Input
             placeholder="e.g. First Bank Plc"
             value={payrollForm.bankName}
             onChange={(e) =>
               setPayrollForm((p) => ({ ...p, bankName: e.target.value }))
             }
-            className="h-11"
+            className={EDIT_FIELD_CLASS}
           />
         </div>
         <div className="space-y-1.5">
-          <label className="text-xs font-medium text-gray-700">
+          <label className="font-raleway text-xs font-medium text-gray-700">
             Account Name
           </label>
           <Input
@@ -1119,11 +1148,11 @@ export default function EmployeeDetail() {
             onChange={(e) =>
               setPayrollForm((p) => ({ ...p, accountName: e.target.value }))
             }
-            className="h-11"
+            className={EDIT_FIELD_CLASS}
           />
         </div>
         <div className="space-y-1.5">
-          <label className="text-xs font-medium text-gray-700">
+          <label className="font-raleway text-xs font-medium text-gray-700">
             Account Number
           </label>
           <Input
@@ -1132,11 +1161,11 @@ export default function EmployeeDetail() {
             onChange={(e) =>
               setPayrollForm((p) => ({ ...p, accountNumber: e.target.value }))
             }
-            className="h-11"
+            className={EDIT_FIELD_CLASS}
           />
         </div>
         <div className="space-y-1.5">
-          <label className="text-xs font-medium text-gray-700">
+          <label className="font-raleway text-xs font-medium text-gray-700">
             Salary Amount
           </label>
           <Input
@@ -1145,33 +1174,37 @@ export default function EmployeeDetail() {
             onChange={(e) =>
               setPayrollForm((p) => ({ ...p, salaryAmount: e.target.value }))
             }
-            className="h-11"
+            className={EDIT_FIELD_CLASS}
           />
         </div>
         <div className="space-y-1.5">
-          <label className="text-xs font-medium text-gray-700">Tax ID</label>
+          <label className="font-raleway text-xs font-medium text-gray-700">
+            Tax ID
+          </label>
           <Input
             placeholder="123-45-6789"
             value={payrollForm.taxId}
             onChange={(e) =>
               setPayrollForm((p) => ({ ...p, taxId: e.target.value }))
             }
-            className="h-11"
+            className={EDIT_FIELD_CLASS}
           />
         </div>
         <div className="space-y-1.5">
-          <label className="text-xs font-medium text-gray-700">BVN</label>
+          <label className="font-raleway text-xs font-medium text-gray-700">
+            BVN
+          </label>
           <Input
             placeholder="123-45-6789"
             value={payrollForm.bvn}
             onChange={(e) =>
               setPayrollForm((p) => ({ ...p, bvn: e.target.value }))
             }
-            className="h-11"
+            className={EDIT_FIELD_CLASS}
           />
         </div>
         <div className="space-y-1.5">
-          <label className="text-xs font-medium text-gray-700">
+          <label className="font-raleway text-xs font-medium text-gray-700">
             Payroll Status
           </label>
           <Select
@@ -1180,7 +1213,7 @@ export default function EmployeeDetail() {
               setPayrollForm((p) => ({ ...p, payrollStatus: val }))
             }
           >
-            <SelectTrigger className="h-11">
+            <SelectTrigger className={EDIT_FIELD_CLASS}>
               <SelectValue placeholder="Select status" />
             </SelectTrigger>
             <SelectContent>
@@ -1196,27 +1229,81 @@ export default function EmployeeDetail() {
 
   // ── Documents Tab ─────────────────────────────────────────────────────────
   const renderDocuments = () => (
-    <div className="mt-4 rounded-xl border border-gray-100 bg-white p-6">
-      {/* Document Category */}
-      <div className="mb-5">
-        <label className="mb-1.5 block text-sm font-medium text-gray-800">
-          Document Category
-        </label>
-        <Select value={docCategory} onValueChange={setDocCategory}>
-          <SelectTrigger className="h-11 w-full">
-            <SelectValue placeholder="e.g Offer Letter" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="Personal">Personal</SelectItem>
-            <SelectItem value="Contract of Employment">
-              Contract of Employment
-            </SelectItem>
-            <SelectItem value="Certificate">Certificate</SelectItem>
-            <SelectItem value="Offer Letter">Offer Letter</SelectItem>
-            <SelectItem value="Tax">Tax</SelectItem>
-            <SelectItem value="Other">Other</SelectItem>
-          </SelectContent>
-        </Select>
+    <div className={WHITE_CARD_CLASS}>
+      {/* Document Category — Add New + list */}
+      <div className="mb-6 rounded-xl border border-[#254C00]/20 bg-white p-5">
+        <button
+          type="button"
+          onClick={() => setShowAddCategoryForm((v) => !v)}
+          className="font-raleway mb-4 flex items-center gap-2 text-sm font-semibold text-[#254C00] hover:opacity-90"
+        >
+          <span className="flex size-6 items-center justify-center rounded-full bg-[#254C00] text-white">
+            <AddIcon className="size-3.5" />
+          </span>
+          + Add New
+        </button>
+
+        {showAddCategoryForm && (
+          <div className="mb-4 space-y-3">
+            <Input
+              placeholder="Enter document category"
+              value={newCategoryInput}
+              onChange={(e) => setNewCategoryInput(e.target.value)}
+              className="h-11 w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm"
+            />
+            <div className="flex gap-3">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  setNewCategoryInput('');
+                  setShowAddCategoryForm(false);
+                }}
+                className="font-raleway rounded-lg border-[#254C00] px-4 py-2 text-sm font-medium text-[#254C00] hover:bg-[#254C00]/5"
+              >
+                Cancel
+              </Button>
+              <Button
+                type="button"
+                onClick={() => {
+                  const name = newCategoryInput.trim();
+                  if (!name) return;
+                  if (documentCategories.includes(name)) {
+                    toast.error('Category already exists');
+                    return;
+                  }
+                  setDocumentCategories((prev) => [...prev, name]);
+                  setDocCategory(name);
+                  setNewCategoryInput('');
+                  setShowAddCategoryForm(false);
+                  toast.success('Category added');
+                }}
+                className="font-raleway rounded-lg bg-[#3300C9] px-4 py-2 text-sm font-semibold text-white hover:bg-[#5A23B8]"
+              >
+                Add
+              </Button>
+            </div>
+          </div>
+        )}
+
+        <div className="space-y-1">
+          <p className="font-raleway mb-2 text-xs font-medium text-gray-500">
+            Existing categories
+          </p>
+          {documentCategories.map((cat) => (
+            <button
+              key={cat}
+              type="button"
+              onClick={() => setDocCategory(cat)}
+              className={cn(
+                'font-raleway block w-full rounded-lg px-3 py-2 text-left text-sm text-gray-700 transition-colors hover:bg-gray-50',
+                docCategory === cat && 'bg-[#3300C9]/10 text-[#3300C9]'
+              )}
+            >
+              {cat}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Upload Drop Zone */}
@@ -1297,7 +1384,7 @@ export default function EmployeeDetail() {
                       )
                     }
                   >
-                    <Trash2Icon className="size-3.5" />
+                    <DeleteIcon className="size-3.5" />
                   </button>
                 </div>
               </div>
@@ -1320,13 +1407,13 @@ export default function EmployeeDetail() {
   // ── Render ───────────────────────────────────────────────────────────────
   return (
     <>
-      {/* Tab nav — replaces HR layout tabs for this route */}
+      {/* Tab nav — Raleway 600, 14px, 24px line-height */}
       <div className="mt-2.5 flex items-center gap-6 overflow-x-auto border-b-2 border-[#D9D9D9] pt-4">
         {TABS.map((tab) => (
           <span
             key={tab.key}
             onClick={() => handleTabChange(tab.key)}
-            className={`cursor-pointer pb-2.5 text-xs font-bold text-nowrap transition-colors ${
+            className={`font-raleway cursor-pointer pb-2.5 text-sm leading-6 font-semibold text-nowrap transition-colors ${
               activeTab === tab.key
                 ? 'border-primary text-primary border-b-2'
                 : 'text-gray-600 hover:text-gray-900'
@@ -1338,12 +1425,12 @@ export default function EmployeeDetail() {
       </div>
 
       <div className="my-4 min-h-screen">
-        {/* Back button */}
+        {/* Back button — Raleway 600, 20px, 100% line-height */}
         <button
           onClick={() => navigate('/dashboard/hr/employee-directory')}
-          className="mb-4 flex items-center gap-2 text-xl font-bold text-gray-900"
+          className="font-raleway mb-4 flex items-center gap-2 text-[20px] leading-none font-semibold text-gray-900"
         >
-          <ArrowLeftIcon className="size-5" />
+          <ArrowLeftIcon className="size-5 shrink-0" />
           Employee Details
         </button>
 
@@ -1378,7 +1465,7 @@ export default function EmployeeDetail() {
                 )}
                 {displayDate && (
                   <span className="flex items-center gap-1.5">
-                    <CalendarIcon className="size-4 text-[#434343]" />
+                    <DateIcon className="size-4 shrink-0 text-[#434343]" />
                     {displayDate}
                   </span>
                 )}
