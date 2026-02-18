@@ -34,6 +34,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import toast from 'react-hot-toast';
 import SuccessModal from '@/components/dashboard/hr/success-modal';
+import RequestDetailsView from '@/components/dashboard/hr/employee-directory/request-details-view';
 
 const ticketFormSchema = z.object({
   requestType: z.string().min(1, { message: 'Request type is required' }),
@@ -54,6 +55,8 @@ const ticketDropdownActions = [
 export default function HRServiceDesk() {
   const [isCreateTicketOpen, setIsCreateTicketOpen] = useState(false);
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
+  const [selectedTicketId, setSelectedTicketId] = useState(null);
+  const [confirmResolutionModalOpen, setConfirmResolutionModalOpen] = useState(false);
   const { activeBusiness } = useUserStore();
   const [tickets, setTickets] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -163,6 +166,7 @@ export default function HRServiceDesk() {
   };
 
   const ticketData = transformTicketData(tickets);
+  const selectedTicket = ticketData.find((t) => t.id === selectedTicketId);
 
   // Sample chart data for metrics
   const sampleChartData = [
@@ -234,6 +238,16 @@ export default function HRServiceDesk() {
     setCurrentPage(newPage);
   };
 
+  const handleConfirmResolution = () => {
+    if (!selectedTicketId) return;
+    setTickets((prev) =>
+      prev.map((t) =>
+        t.id === selectedTicketId ? { ...t, status: 'Closed' } : t
+      )
+    );
+    setConfirmResolutionModalOpen(true);
+  };
+
   const onSubmitTicket = async (data) => {
     try {
       setIsLoading(true);
@@ -271,7 +285,7 @@ export default function HRServiceDesk() {
           </Button>
           <Button
             onClick={() => setIsCreateTicketOpen(true)}
-            className="h-10 gap-2 rounded-lg bg-[#6C2BD9] px-5 text-sm font-medium text-white hover:bg-[#5A23B8]"
+            className="font-raleway h-10 gap-2 rounded-[16px] bg-[#3300C9] px-5 text-[14px] font-semibold text-white hover:bg-[#5A23B8]"
           >
             <AddIcon />
             Create New Ticket
@@ -301,16 +315,51 @@ export default function HRServiceDesk() {
         </div>
 
         <div className="mt-10">
-          <SupportTicketsTable
-            data={ticketData}
-            isLoading={isLoading}
-            paginationData={paginationData}
-            onPageChange={handlePageChange}
-            onRowAction={handleTicketTableAction}
-            dropdownActions={ticketDropdownActions}
-          />
+          {selectedTicket ? (
+            <RequestDetailsView
+              ticket={selectedTicket}
+              onBack={() => setSelectedTicketId(null)}
+              onConfirmResolution={handleConfirmResolution}
+              onReopenTicket={() => {
+                if (!selectedTicketId) return;
+                setTickets((prev) =>
+                  prev.map((t) =>
+                    t.id === selectedTicketId ? { ...t, status: 'Open' } : t
+                  )
+                );
+                setSelectedTicketId(null);
+                toast.success('Ticket reopened');
+              }}
+              onSendReply={(text) => {
+                console.log('Send reply:', text);
+                toast.success('Reply sent');
+              }}
+            />
+          ) : (
+            <SupportTicketsTable
+              data={ticketData}
+              isLoading={isLoading}
+              paginationData={paginationData}
+              onPageChange={handlePageChange}
+              onRowAction={handleTicketTableAction}
+              onRowClick={(ticket) => setSelectedTicketId(ticket.id)}
+              dropdownActions={ticketDropdownActions}
+            />
+          )}
         </div>
       </div>
+
+      {/* Confirm Resolution success modal */}
+      <SuccessModal
+        open={confirmResolutionModalOpen}
+        onOpenChange={setConfirmResolutionModalOpen}
+        title="Resolution Confirmed"
+        subtitle="You've successfully confirmed resolution for this ticket"
+        onBack={() => {
+          setConfirmResolutionModalOpen(false);
+          setSelectedTicketId(null);
+        }}
+      />
 
       {/* Create Ticket Modal */}
       <Dialog open={isCreateTicketOpen} onOpenChange={setIsCreateTicketOpen}>

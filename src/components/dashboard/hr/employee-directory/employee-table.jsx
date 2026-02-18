@@ -112,14 +112,14 @@ export default function EmployeeTable({
         <h2 className="text-xl font-bold text-gray-900">All Employees</h2>
 
         <div className="flex items-center gap-[7px]">
-          {/* Search — width 228px, height 48px, radius 16px, padding 12px 100px 12px 12px, border 1px */}
+          {/* Search — icon left, text padded so it doesn’t overlap icon */}
           <div className="relative">
-            <span className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2">
+            <span className="pointer-events-none absolute top-1/2 left-3 z-10 -translate-y-1/2">
               <SearchIcon className="size-4 text-[#7D7D7D]" />
             </span>
             <Input
               placeholder="Search employee......."
-              className="h-12 w-[228px] gap-[7px] rounded-[16px] border border-[#E5E7EB] py-3 pr-[100px] pl-3 text-sm outline-none focus-visible:ring-0"
+              className="h-12 w-[228px] rounded-[16px] border border-[#E5E7EB] py-3 pl-10 pr-[100px] text-sm outline-none focus-visible:ring-0"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />

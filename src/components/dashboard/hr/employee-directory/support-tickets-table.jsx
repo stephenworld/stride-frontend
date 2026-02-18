@@ -77,6 +77,7 @@ export default function SupportTicketsTable({
   paginationData = { page: 1, totalPages: 1, pageSize: 20, totalCount: 0 },
   onPageChange,
   onRowAction,
+  onRowClick,
   dropdownActions = [],
 }) {
   const [searchTerm, setSearchTerm] = useState('');
@@ -102,12 +103,12 @@ export default function SupportTicketsTable({
 
         <div className="flex items-center gap-[7px]">
           <div className="relative">
-            <span className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2">
+            <span className="pointer-events-none absolute top-1/2 left-3 z-10 -translate-y-1/2">
               <SearchIcon className="size-4 text-[#7D7D7D]" />
             </span>
             <Input
               placeholder="Search job......"
-              className="h-12 w-[228px] gap-[7px] rounded-[16px] border border-[#E5E7EB] py-3 pr-[100px] pl-3 text-sm outline-none focus-visible:ring-0"
+              className="h-12 w-[228px] rounded-[16px] border border-[#E5E7EB] py-3 pl-10 pr-[100px] text-sm outline-none focus-visible:ring-0"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -152,7 +153,20 @@ export default function SupportTicketsTable({
           filtered.map((ticket) => (
             <div
               key={ticket.id}
-              className={`${GRID} h-[66px] w-full rounded-[16px] border border-[#E8E8E8] bg-white px-5 py-4`}
+              role={onRowClick ? 'button' : undefined}
+              tabIndex={onRowClick ? 0 : undefined}
+              onClick={onRowClick ? () => onRowClick(ticket) : undefined}
+              onKeyDown={
+                onRowClick
+                  ? (e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        onRowClick(ticket);
+                      }
+                    }
+                  : undefined
+              }
+              className={`${GRID} h-[66px] w-full rounded-[16px] border border-[#E8E8E8] bg-white px-5 py-4 ${onRowClick ? 'cursor-pointer transition-colors hover:bg-gray-50/80' : ''}`}
             >
               <span className="font-raleway text-sm leading-6 font-medium text-[#000000CC]">
                 {ticket.ticketId || '—'}
@@ -180,7 +194,7 @@ export default function SupportTicketsTable({
               >
                 {ticket.status}
               </span>
-              <div className="flex justify-end">
+              <div className="flex justify-end" onClick={(e) => e.stopPropagation()}>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" size="icon" className="size-8">

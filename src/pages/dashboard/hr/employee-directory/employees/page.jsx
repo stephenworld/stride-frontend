@@ -53,6 +53,7 @@ import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import EmployeeService from '@/api/employee';
 import toast from 'react-hot-toast';
+import SuccessModal from '@/components/dashboard/hr/success-modal';
 
 // Set to true to always use dummy data for UI testing (e.g. when opening /employees/1 … /employees/4)
 const USE_MOCK_FOR_TESTING = true;
@@ -208,8 +209,8 @@ function FieldRow({ icon: Icon, label, value }) {
   );
 }
 
-// ─── Salary Breakdown Modal ───────────────────────────────────────────────────
-function SalaryBreakdownModal({ open, onOpenChange }) {
+// ─── Salary Breakdown Modal (view) ───────────────────────────────────────────
+function SalaryBreakdownModal({ open, onOpenChange, onEditSalary }) {
   const earnings = [
     {
       component: 'Basic Salary',
@@ -399,7 +400,14 @@ function SalaryBreakdownModal({ open, onOpenChange }) {
               <DownloadIcon className="mr-2 size-4" />
               Download PDF
             </Button>
-            <Button className="rounded-full bg-[#3300C9] px-8 text-white hover:bg-[#3300C9]/90">
+            <Button
+              type="button"
+              onClick={() => {
+                onOpenChange(false);
+                onEditSalary?.();
+              }}
+              className="font-raleway rounded-full bg-[#3300C9] px-8 text-white hover:bg-[#3300C9]/90"
+            >
               Edit Salary
             </Button>
           </div>
@@ -420,6 +428,8 @@ export default function EmployeeDetail() {
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [showSalaryBreakdown, setShowSalaryBreakdown] = useState(false);
+  const [showEditSalaryBreakdown, setShowEditSalaryBreakdown] = useState(false);
+  const [showSalaryUpdatedModal, setShowSalaryUpdatedModal] = useState(false);
   const [employee, setEmployee] = useState(null);
   const [departments, setDepartments] = useState([]);
   const [docCategory, setDocCategory] = useState('');
@@ -1495,10 +1505,84 @@ export default function EmployeeDetail() {
         {activeTab === 'documents' && renderDocuments()}
       </div>
 
-      {/* Salary Breakdown Modal */}
+      {/* Salary Breakdown Modal (view) */}
       <SalaryBreakdownModal
         open={showSalaryBreakdown}
         onOpenChange={setShowSalaryBreakdown}
+        onEditSalary={() => setShowEditSalaryBreakdown(true)}
+      />
+
+      {/* Edit Salary Breakdown Modal */}
+      <Dialog
+        open={showEditSalaryBreakdown}
+        onOpenChange={setShowEditSalaryBreakdown}
+      >
+        <DialogContent
+          className="max-h-[90vh] w-full max-w-2xl overflow-y-auto p-8"
+          overlayClassName="bg-[#0C0C0CE5]"
+        >
+          <DialogHeader className="text-left">
+            <DialogTitle className="font-raleway text-xl font-semibold">
+              Edit Salary Breakdown
+            </DialogTitle>
+            <p className="font-raleway mt-1 text-sm text-gray-500">
+              Configure earnings, deductions, and benefits that make up this
+              offer.
+            </p>
+          </DialogHeader>
+          <div className="mt-6">
+            <h4 className="font-raleway text-sm font-semibold text-gray-800">
+              Earnings
+            </h4>
+            <p className="font-raleway mt-0.5 text-xs text-gray-500">
+              Compensation components listed in your payroll configuration.
+            </p>
+            <div className="mt-3 space-y-2 rounded-lg border border-gray-100 p-3">
+              {['Basic Salary', 'Housing Allowance', 'Transport Allowance'].map(
+                (label, i) => (
+                  <div
+                    key={label}
+                    className="flex items-center gap-3 text-sm text-gray-700"
+                  >
+                    <Input
+                      placeholder="e.g N145,000"
+                      className="h-9 w-32 rounded-md border text-sm"
+                    />
+                    <span className="font-raleway text-gray-500">{label}</span>
+                  </div>
+                )
+              )}
+            </div>
+          </div>
+          <div className="mt-6 flex justify-end gap-3">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setShowEditSalaryBreakdown(false)}
+              className="font-raleway rounded-lg border-gray-300 px-5 text-sm"
+            >
+              Back
+            </Button>
+            <Button
+              type="button"
+              onClick={() => {
+                setShowEditSalaryBreakdown(false);
+                setShowSalaryUpdatedModal(true);
+              }}
+              className="font-raleway rounded-lg bg-[#3300C9] px-5 text-sm font-semibold text-white hover:bg-[#5A23B8]"
+            >
+              Save Changes
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Salary Updated confirmation modal */}
+      <SuccessModal
+        open={showSalaryUpdatedModal}
+        onOpenChange={setShowSalaryUpdatedModal}
+        title="Salary Updated"
+        subtitle="You've successfully Updated a Salary"
       />
     </>
   );
