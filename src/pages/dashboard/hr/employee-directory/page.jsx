@@ -4,7 +4,7 @@ import AddEmployeeModal from '@/components/dashboard/hr/employee-directory/add-e
 import SuccessModal from '@/components/dashboard/hr/success-modal';
 import { Button } from '@/components/ui/button';
 import { Layers3Icon } from 'lucide-react';
-import { AddIcon } from '@/components/ui/svgs';
+import { AddIcon, EyeIcon, EditIcon, DeleteIcon } from '@/components/ui/svgs';
 import AccountingTable from '@/components/dashboard/accounting/table';
 import MetricCard from '@/components/dashboard/hr/metric-card';
 import EmployeeService from '@/api/employee';
@@ -18,9 +18,46 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import youtubeIcon from '@/assets/icons/youtube-red.png';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+
+const getInitials = (name) =>
+  name
+    .split(' ')
+    .map((n) => n[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 2);
+
+const getAvatarColor = (name) => {
+  const colors = [
+    'bg-blue-600',
+    'bg-red-600',
+    'bg-green-600',
+    'bg-purple-600',
+    'bg-amber-600',
+  ];
+  const i =
+    name.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0) % colors.length;
+  return colors[i];
+};
 
 const tableColumns = [
-  { key: 'name', label: 'Employee Name' },
+  {
+    key: 'name',
+    label: 'Employee Name',
+    render: (value, item) => (
+      <div className="flex items-center gap-3">
+        <Avatar className="size-10 shrink-0">
+          <AvatarFallback
+            className={`${item.avatarColor || 'bg-blue-600'} text-sm font-medium text-white`}
+          >
+            {item.avatarInitials}
+          </AvatarFallback>
+        </Avatar>
+        <span className="font-medium">{value}</span>
+      </div>
+    ),
+  },
   { key: 'role', label: 'Role' },
   { key: 'department', label: 'Department' },
   { key: 'employeeId', label: 'Employee ID' },
@@ -29,19 +66,18 @@ const tableColumns = [
 
 const employeeStatusStyles = {
   Active: 'bg-green-100 text-green-800 hover:bg-green-100',
-  Inactive: 'bg-gray-100 text-gray-800 hover:bg-gray-100',
-  'On Leave': 'bg-yellow-100 text-yellow-800 hover:bg-yellow-100',
-  Terminated: 'bg-red-100 text-red-800 hover:bg-red-100',
+  Onboarding: 'bg-slate-100 text-slate-700 hover:bg-slate-100',
+  'On Leave': 'bg-amber-100 text-amber-800 hover:bg-amber-100',
+  Exited: 'bg-red-100 text-red-800 hover:bg-red-100',
 };
 
 const employeeDropdownActions = [
-  { key: 'view', label: 'View Profile' },
-  { key: 'edit', label: 'Edit Details' },
-  { key: 'assign-asset', label: 'Assign Asset' },
-  { key: 'view-attendance', label: 'View Attendance' },
+  { key: 'view', label: 'View', icon: EyeIcon },
+  { key: 'edit', label: 'Edit', icon: EditIcon },
+  { key: 'delete', label: 'Delete', icon: DeleteIcon },
 ];
 
-// Set to true to test with mock data (list, detail, and success flow without API)
+// Set to true to test list, detail, and "Test success modal" without API
 const USE_MOCK_FOR_TESTING = true;
 
 const mockEmployees = [
@@ -52,7 +88,7 @@ const mockEmployees = [
     positionTitle: 'Senior Software Engineer',
     department: 'Engineering',
     employeeId: '345321231',
-    status: 'ACTIVE',
+    status: 'ONBOARDING',
   },
   {
     id: '2',
@@ -93,7 +129,6 @@ const mockAnalytics = {
 export default function EmployeeDirectory() {
   const [isCreateEmployeeOpen, setIsCreateEmployeeOpen] = useState(false);
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
-  const [selectedItems, setSelectedItems] = useState([]);
   const { activeBusiness } = useUserStore();
   const [employees, setEmployees] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -116,9 +151,13 @@ export default function EmployeeDirectory() {
   // Transform employee data to match table format
   const transformEmployeeData = (employeesData) => {
     return employeesData.map((employee) => {
+      const fullName =
+        `${employee.firstName || ''} ${employee.lastName || ''}`.trim();
       return {
         id: employee.id || employee._id,
-        name: `${employee.firstName} ${employee.lastName}`,
+        name: fullName || '-',
+        avatarInitials: getInitials(fullName || 'NA'),
+        avatarColor: getAvatarColor(fullName || ''),
         role: employee.positionTitle || employee.position || '-',
         department: employee.departmentName || employee.department || '-',
         employeeId: employee.employeeId || '-',
@@ -127,61 +166,66 @@ export default function EmployeeDirectory() {
             ? 'Active'
             : employee.status === 'ON_LEAVE'
               ? 'On Leave'
-              : employee.status === 'TERMINATED'
-                ? 'Terminated'
-                : 'Inactive',
+              : employee.status === 'TERMINATED' || employee.status === 'EXITED'
+                ? 'Exited'
+                : employee.status === 'ONBOARDING'
+                  ? 'Onboarding'
+                  : 'Inactive',
       };
     });
   };
 
   const employeeData = transformEmployeeData(employees);
 
-  // Sample chart data for metrics
-  const sampleChartData = [
-    { month: 'Jan', month1: 600 },
-    { month: 'Feb', month2: 800 },
-    { month: 'Mar', month3: 1000 },
-  ];
-
-  // Create metrics from analytics data
-  const employeeMetrics = [
+  // Metric data and card pattern from HR Overview
+  const metricsData = [
     {
       title: 'Total Employees',
       value: analytics.totalEmployees,
-      percentage: 0,
+      percentage: 5,
       isPositive: true,
-      chartData: sampleChartData,
-      emptyState: true,
+      chartData: [
+        { month: 'Jan', month1: 600 },
+        { month: 'Feb', month2: 800 },
+        { month: 'Mar', month3: 1000 },
+      ],
     },
     {
       title: 'Active Employees',
       value: analytics.activeEmployees,
-      percentage: 0,
-      isPositive: true,
-      chartData: sampleChartData,
-      emptyState: true,
+      percentage: 2,
+      isPositive: false,
+      chartData: [
+        { month: 'Jan', month1: 1000 },
+        { month: 'Feb', month2: 800 },
+        { month: 'Mar', month3: 600 },
+      ],
     },
     {
       title: 'On Leave',
       value: analytics.onLeave,
-      percentage: 0,
+      percentage: 5,
       isPositive: true,
-      chartData: sampleChartData,
-      emptyState: true,
+      chartData: [
+        { month: 'Jan', month1: 600 },
+        { month: 'Feb', month2: 800 },
+        { month: 'Mar', month3: 1000 },
+      ],
     },
     {
       title: 'Exited Employees',
       value: analytics.exitedEmployees,
-      percentage: 0,
+      percentage: 2,
       isPositive: true,
-      chartData: sampleChartData,
-      emptyState: true,
+      chartData: [
+        { month: 'Jan', month1: 600 },
+        { month: 'Feb', month2: 800 },
+        { month: 'Mar', month3: 1000 },
+      ],
     },
   ];
 
   const handleEmployeeTableAction = (action, employee) => {
-    console.log('Employee action:', action, employee);
-
     switch (action) {
       case 'view':
         navigate(`/dashboard/hr/employee-directory/employees/${employee.id}`);
@@ -190,38 +234,17 @@ export default function EmployeeDirectory() {
         // TODO: Open edit modal
         console.log('Edit employee:', employee.id);
         break;
-      case 'assign-asset':
-        // TODO: Navigate to asset assignment
-        console.log('Assign asset to:', employee.id);
-        break;
-      case 'view-attendance':
-        // TODO: Navigate to attendance view
-        navigate(`/dashboard/hr/attendance-leave?employeeId=${employee.id}`);
+      case 'delete':
+        // TODO: Confirm and call delete API
+        console.log('Delete employee:', employee.id);
         break;
       default:
         console.log('Unknown action:', action);
     }
   };
 
-  const handleSelectTableItem = (itemId, checked) => {
-    if (checked) {
-      setSelectedItems([...selectedItems, itemId]);
-    } else {
-      setSelectedItems(selectedItems.filter((id) => id !== itemId));
-    }
-  };
-
-  const handleSelectAllItems = (checked) => {
-    if (checked) {
-      setSelectedItems(employeeData.map((item) => item.id));
-    } else {
-      setSelectedItems([]);
-    }
-  };
-
   const handlePageChange = (newPage) => {
     setCurrentPage(newPage);
-    setSelectedItems([]); // Clear selections when changing pages
   };
 
   useEffect(() => {
@@ -324,58 +347,52 @@ export default function EmployeeDirectory() {
         </div>
       </div>
 
-      <div className="mt-10">
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {employeeMetrics.map((metric, index) => (
-            <MetricCard
-              key={index}
-              title={metric.title}
-              value={metric.value}
-              percentage={metric.percentage}
-              isPositive={metric.isPositive}
-              chartData={metric.chartData}
-              emptyState={metric.emptyState}
-            />
-          ))}
-        </div>
-
-        <div className="mt-10">
-          <AccountingTable
-            title={'All Employees'}
-            data={employeeData}
-            columns={tableColumns}
-            searchFields={['name', 'employeeId', 'role', 'department']}
-            searchPlaceholder="Search employee......."
-            statusStyles={employeeStatusStyles}
-            dropdownActions={employeeDropdownActions}
-            paginationData={paginationData}
-            onPageChange={handlePageChange}
-            onRowAction={handleEmployeeTableAction}
-            selectedItems={selectedItems}
-            handleSelectItem={handleSelectTableItem}
-            handleSelectAll={handleSelectAllItems}
-            isLoading={isLoading}
-            customHeaderActions={
-              <Select
-                value={selectedDepartment}
-                onValueChange={setSelectedDepartment}
-              >
-                <SelectTrigger className="w-[180px] gap-2">
-                  <Layers3Icon className="h-4 w-4 text-gray-500" />
-                  <SelectValue placeholder="All Department" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Department</SelectItem>
-                  <SelectItem value="engineering">Engineering</SelectItem>
-                  <SelectItem value="sales">Sales</SelectItem>
-                  <SelectItem value="marketing">Marketing</SelectItem>
-                  <SelectItem value="hr">Human Resources</SelectItem>
-                  <SelectItem value="finance">Finance</SelectItem>
-                </SelectContent>
-              </Select>
-            }
+      <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
+        {metricsData.map((metric) => (
+          <MetricCard
+            key={metric.title}
+            {...metric}
+            emptyState={true}
+            emojis={metric.emojis}
           />
-        </div>
+        ))}
+      </div>
+
+      <div className="mt-10">
+        <AccountingTable
+          title={'All Employees'}
+          data={employeeData}
+          columns={tableColumns}
+          searchFields={['name', 'employeeId', 'role', 'department']}
+          searchPlaceholder="Search employee......"
+          statusStyles={employeeStatusStyles}
+          dropdownActions={employeeDropdownActions}
+          paginationData={paginationData}
+          onPageChange={handlePageChange}
+          onRowAction={handleEmployeeTableAction}
+          isLoading={isLoading}
+          cardStyleRows
+          optionsMenuStyle
+          customHeaderActions={
+            <Select
+              value={selectedDepartment}
+              onValueChange={setSelectedDepartment}
+            >
+              <SelectTrigger className="w-[180px] gap-2">
+                <Layers3Icon className="h-4 w-4 text-gray-500" />
+                <SelectValue placeholder="All Department" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Department</SelectItem>
+                <SelectItem value="engineering">Engineering</SelectItem>
+                <SelectItem value="sales">Sales</SelectItem>
+                <SelectItem value="marketing">Marketing</SelectItem>
+                <SelectItem value="hr">Human Resources</SelectItem>
+                <SelectItem value="finance">Finance</SelectItem>
+              </SelectContent>
+            </Select>
+          }
+        />
       </div>
 
       <AddEmployeeModal

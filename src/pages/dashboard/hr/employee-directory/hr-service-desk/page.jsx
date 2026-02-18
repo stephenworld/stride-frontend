@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import { Button } from '@/components/ui/button';
-import { EyeIcon, Trash2Icon } from 'lucide-react';
-import { AddIcon } from '@/components/ui/svgs';
+import { AddIcon, EyeIcon, EditIcon, DeleteIcon } from '@/components/ui/svgs';
 import AccountingTable from '@/components/dashboard/accounting/table';
 import MetricCard from '@/components/dashboard/hr/metric-card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -86,13 +85,13 @@ const priorityStyles = {
 
 const ticketDropdownActions = [
   { key: 'view', label: 'View', icon: EyeIcon },
-  { key: 'delete', label: 'Delete', icon: Trash2Icon },
+  { key: 'edit', label: 'Edit', icon: EditIcon },
+  { key: 'delete', label: 'Delete', icon: DeleteIcon },
 ];
 
 export default function HRServiceDesk() {
   const [isCreateTicketOpen, setIsCreateTicketOpen] = useState(false);
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
-  const [selectedItems, setSelectedItems] = useState([]);
   const { activeBusiness } = useUserStore();
   const [tickets, setTickets] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -250,6 +249,14 @@ export default function HRServiceDesk() {
         // TODO: Navigate to ticket detail page
         console.log('View ticket:', ticket.id);
         break;
+      case 'edit':
+        // TODO: Open edit ticket modal
+        console.log('Edit ticket:', ticket.id);
+        break;
+      case 'delete':
+        // TODO: Confirm and delete ticket
+        console.log('Delete ticket:', ticket.id);
+        break;
       case 'respond':
         // TODO: Open response modal
         console.log('Respond to ticket:', ticket.id);
@@ -268,25 +275,8 @@ export default function HRServiceDesk() {
     }
   };
 
-  const handleSelectTableItem = (itemId, checked) => {
-    if (checked) {
-      setSelectedItems([...selectedItems, itemId]);
-    } else {
-      setSelectedItems(selectedItems.filter((id) => id !== itemId));
-    }
-  };
-
-  const handleSelectAllItems = (checked) => {
-    if (checked) {
-      setSelectedItems(ticketData.map((item) => item.id));
-    } else {
-      setSelectedItems([]);
-    }
-  };
-
   const handlePageChange = (newPage) => {
     setCurrentPage(newPage);
-    setSelectedItems([]);
   };
 
   const onSubmitTicket = async (data) => {
@@ -331,6 +321,13 @@ export default function HRServiceDesk() {
             <AddIcon />
             Create New Ticket
           </Button>
+          <Button
+            variant="outline"
+            onClick={() => setIsSuccessModalOpen(true)}
+            className="h-10 text-sm"
+          >
+            Test success modal
+          </Button>
         </div>
       </div>
 
@@ -360,10 +357,8 @@ export default function HRServiceDesk() {
             paginationData={paginationData}
             onPageChange={handlePageChange}
             onRowAction={handleTicketTableAction}
-            selectedItems={selectedItems}
-            handleSelectItem={handleSelectTableItem}
-            handleSelectAll={handleSelectAllItems}
             isLoading={isLoading}
+            optionsMenuStyle
           />
         </div>
       </div>

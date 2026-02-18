@@ -66,9 +66,12 @@ export default function AccountingTable({
   isLoading = false,
   setShowDetails,
   customHeaderActions = null,
+  cardStyleRows = false,
+  optionsMenuStyle = false,
 }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeProductView, setActiveProductView] = useState('grid');
+  const showCheckbox = Boolean(handleSelectAll && handleSelectItem);
 
   const getStatusBadge = (status) => {
     const defaultStyles = 'bg-gray-100 text-gray-800 hover:bg-gray-100';
@@ -282,21 +285,31 @@ export default function AccountingTable({
           ))}
         </div>
       ) : (
-        <div className="overflow-hidden rounded-lg border">
-          <Table>
+        <div
+          className={
+            cardStyleRows ? 'space-y-2' : 'overflow-hidden rounded-lg border'
+          }
+        >
+          <Table
+            className={
+              cardStyleRows ? 'border-separate border-spacing-y-2' : ''
+            }
+          >
             <TableHeader>
               <TableRow className="bg-zinc-50">
-                <TableHead className="w-12">
-                  <Checkbox
-                    checked={
-                      selectedItems.length === data.length && data.length > 0
-                    }
-                    onCheckedChange={(checked) => {
-                      if (!handleSelectAll) return;
-                      handleSelectAll(checked);
-                    }}
-                  />
-                </TableHead>
+                {showCheckbox && (
+                  <TableHead className="w-12">
+                    <Checkbox
+                      checked={
+                        selectedItems.length === data.length && data.length > 0
+                      }
+                      onCheckedChange={(checked) => {
+                        if (!handleSelectAll) return;
+                        handleSelectAll(checked);
+                      }}
+                    />
+                  </TableHead>
+                )}
                 {columns.map((column, index) => (
                   <TableHead
                     key={index}
@@ -315,9 +328,11 @@ export default function AccountingTable({
                 // Loading skeleton rows
                 Array.from({ length: 5 }).map((_, index) => (
                   <TableRow key={`skeleton-${index}`}>
-                    <TableCell>
-                      <Skeleton className="h-4 w-4" />
-                    </TableCell>
+                    {showCheckbox && (
+                      <TableCell>
+                        <Skeleton className="h-4 w-4" />
+                      </TableCell>
+                    )}
                     {columns.map((column, colIndex) => (
                       <TableCell key={colIndex}>
                         <Skeleton className="h-4 w-full" />
@@ -332,16 +347,25 @@ export default function AccountingTable({
                 ))
               ) : filteredData.length > 0 ? (
                 filteredData.map((item, index) => (
-                  <TableRow key={index} className="hover:bg-zinc-50">
-                    <TableCell>
-                      <Checkbox
-                        checked={selectedItems.includes(item.id)}
-                        onCheckedChange={(checked) => {
-                          if (!handleSelectItem) return;
-                          handleSelectItem(item.id, checked);
-                        }}
-                      />
-                    </TableCell>
+                  <TableRow
+                    key={index}
+                    className={
+                      cardStyleRows
+                        ? 'rounded-lg border border-gray-100 bg-white shadow-sm hover:bg-zinc-50/50'
+                        : 'hover:bg-zinc-50'
+                    }
+                  >
+                    {showCheckbox && (
+                      <TableCell>
+                        <Checkbox
+                          checked={selectedItems.includes(item.id)}
+                          onCheckedChange={(checked) => {
+                            if (!handleSelectItem) return;
+                            handleSelectItem(item.id, checked);
+                          }}
+                        />
+                      </TableCell>
+                    )}
                     {columns.map((column, colIndex) => (
                       <TableCell
                         key={colIndex}
@@ -358,16 +382,30 @@ export default function AccountingTable({
                               <MoreHorizontalIcon className="h-4 w-4" />
                             </Button>
                           </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
+                          <DropdownMenuContent
+                            align="end"
+                            className={
+                              optionsMenuStyle
+                                ? 'flex min-h-[85px] w-[93px] flex-col gap-2 rounded-md border-0 bg-white py-2.5 pr-4 pl-5 shadow-[0px_1px_3px_0px_#0000004D,0px_4px_8px_3px_#00000026]'
+                                : undefined
+                            }
+                          >
                             {dropdownActions.map((action, actionIndex) => (
                               <DropdownMenuItem
                                 key={actionIndex}
                                 onClick={() =>
                                   handleDropdownAction(action.key, item)
                                 }
+                                className={
+                                  optionsMenuStyle
+                                    ? 'font-raleway flex cursor-pointer items-center gap-2 text-xs leading-6 font-normal text-black hover:bg-gray-100 focus:bg-gray-100 [&_svg]:shrink-0 [&_svg_path]:stroke-black'
+                                    : undefined
+                                }
                               >
                                 {action.icon && (
-                                  <action.icon className="mr-2 h-4 w-4" />
+                                  <span className="flex size-3 items-center justify-center">
+                                    <action.icon />
+                                  </span>
                                 )}
                                 {action.label}
                               </DropdownMenuItem>
@@ -382,7 +420,9 @@ export default function AccountingTable({
                 <TableRow>
                   <TableCell
                     colSpan={
-                      columns.length + 1 + (dropdownActions.length > 0 ? 1 : 0)
+                      columns.length +
+                      (showCheckbox ? 1 : 0) +
+                      (dropdownActions.length > 0 ? 1 : 0)
                     }
                     className="h-24 py-12 text-center text-gray-500"
                   >
