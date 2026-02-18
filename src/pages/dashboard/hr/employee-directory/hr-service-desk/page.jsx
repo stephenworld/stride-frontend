@@ -1,10 +1,8 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router';
 import { Button } from '@/components/ui/button';
-import { AddIcon, EyeIcon, EditIcon, DeleteIcon } from '@/components/ui/svgs';
-import AccountingTable from '@/components/dashboard/accounting/table';
+import { AddIcon, EditIcon, DeleteIcon } from '@/components/ui/svgs';
+import SupportTicketsTable from '@/components/dashboard/hr/employee-directory/support-tickets-table';
 import MetricCard from '@/components/dashboard/hr/metric-card';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useUserStore } from '@/stores/user-store';
 import { format } from 'date-fns';
 import youtubeIcon from '@/assets/icons/youtube-red.png';
@@ -47,44 +45,8 @@ const ticketFormSchema = z.object({
     .max(200, { message: 'Description must be 200 characters or less' }),
 });
 
-const tableColumns = [
-  { key: 'ticketId', label: 'Ticket ID' },
-  { key: 'requestType', label: 'Request Type' },
-  {
-    key: 'submittedBy',
-    label: 'Submitted By',
-    render: (value, item) => (
-      <div className="flex items-center gap-2">
-        <Avatar className="size-8">
-          <AvatarFallback
-            className={item.avatarColor || 'bg-blue-600 text-sm text-white'}
-          >
-            {item.avatarInitials}
-          </AvatarFallback>
-        </Avatar>
-        <span>{value}</span>
-      </div>
-    ),
-  },
-  { key: 'dateSubmitted', label: 'Date Submitted' },
-  { key: 'status', label: 'Status' },
-];
-
-const ticketStatusStyles = {
-  Open: 'bg-red-100 text-red-800 hover:bg-red-100',
-  'In Progress': 'bg-yellow-100 text-yellow-800 hover:bg-yellow-100',
-  Resolved: 'bg-blue-100 text-blue-800 hover:bg-blue-100',
-  Closed: 'bg-green-100 text-green-800 hover:bg-green-100',
-};
-
-const priorityStyles = {
-  High: 'bg-red-100 text-red-800 hover:bg-red-100',
-  Medium: 'bg-orange-100 text-orange-800 hover:bg-orange-100',
-  Low: 'bg-green-100 text-green-800 hover:bg-green-100',
-};
-
+// Row actions: only Edit and Delete (no View)
 const ticketDropdownActions = [
-  { key: 'view', label: 'View', icon: EyeIcon },
   { key: 'edit', label: 'Edit', icon: EditIcon },
   { key: 'delete', label: 'Delete', icon: DeleteIcon },
 ];
@@ -108,7 +70,6 @@ export default function HRServiceDesk() {
     inProgress: 0,
     closedTickets: 0,
   });
-  const navigate = useNavigate();
 
   const form = useForm({
     resolver: zodResolver(ticketFormSchema),
@@ -242,13 +203,7 @@ export default function HRServiceDesk() {
   ];
 
   const handleTicketTableAction = (action, ticket) => {
-    console.log('Ticket action:', action, ticket);
-
     switch (action) {
-      case 'view':
-        // TODO: Navigate to ticket detail page
-        console.log('View ticket:', ticket.id);
-        break;
       case 'edit':
         // TODO: Open edit ticket modal
         console.log('Edit ticket:', ticket.id);
@@ -346,19 +301,13 @@ export default function HRServiceDesk() {
         </div>
 
         <div className="mt-10">
-          <AccountingTable
-            title={'Support Tickets'}
+          <SupportTicketsTable
             data={ticketData}
-            columns={tableColumns}
-            searchFields={['ticketId', 'requestType', 'submittedBy']}
-            searchPlaceholder="Search job......."
-            statusStyles={ticketStatusStyles}
-            dropdownActions={ticketDropdownActions}
+            isLoading={isLoading}
             paginationData={paginationData}
             onPageChange={handlePageChange}
             onRowAction={handleTicketTableAction}
-            isLoading={isLoading}
-            optionsMenuStyle
+            dropdownActions={ticketDropdownActions}
           />
         </div>
       </div>
