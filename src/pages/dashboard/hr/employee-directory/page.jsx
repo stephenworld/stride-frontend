@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router';
 import AddEmployeeModal from '@/components/dashboard/hr/employee-directory/add-employee';
 import SuccessModal from '@/components/dashboard/hr/success-modal';
 import { Button } from '@/components/ui/button';
-import { PlusCircleIcon, Layers3Icon } from 'lucide-react';
+import { Layers3Icon } from 'lucide-react';
+import { AddIcon } from '@/components/ui/svgs';
 import AccountingTable from '@/components/dashboard/accounting/table';
 import MetricCard from '@/components/dashboard/hr/metric-card';
 import EmployeeService from '@/api/employee';
@@ -40,8 +41,58 @@ const employeeDropdownActions = [
   { key: 'view-attendance', label: 'View Attendance' },
 ];
 
+// Set to true to test with mock data (list, detail, and success flow without API)
+const USE_MOCK_FOR_TESTING = true;
+
+const mockEmployees = [
+  {
+    id: '1',
+    firstName: 'Nathaniel',
+    lastName: 'Desire',
+    positionTitle: 'Senior Software Engineer',
+    department: 'Engineering',
+    employeeId: '345321231',
+    status: 'ACTIVE',
+  },
+  {
+    id: '2',
+    firstName: 'Femi',
+    lastName: 'Johnson',
+    positionTitle: 'Senior Software Engineer',
+    department: 'Engineering',
+    employeeId: '345321232',
+    status: 'ON_LEAVE',
+  },
+  {
+    id: '3',
+    firstName: 'Sarah',
+    lastName: 'Adeyemi',
+    positionTitle: 'Senior Software Engineer',
+    department: 'Engineering',
+    employeeId: '345321233',
+    status: 'TERMINATED',
+  },
+  {
+    id: '4',
+    firstName: 'Kemi',
+    lastName: 'Jakada',
+    positionTitle: 'Senior Software Engineer',
+    department: 'Engineering',
+    employeeId: '345321234',
+    status: 'ACTIVE',
+  },
+];
+
+const mockAnalytics = {
+  totalEmployees: 150,
+  activeEmployees: 20,
+  onLeave: 70,
+  exitedEmployees: 50,
+};
+
 export default function EmployeeDirectory() {
   const [isCreateEmployeeOpen, setIsCreateEmployeeOpen] = useState(false);
+  const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
   const [selectedItems, setSelectedItems] = useState([]);
   const { activeBusiness } = useUserStore();
   const [employees, setEmployees] = useState([]);
@@ -179,6 +230,20 @@ export default function EmployeeDirectory() {
       const fetchEmployeeData = async () => {
         try {
           setIsLoading(true);
+
+          if (USE_MOCK_FOR_TESTING) {
+            setEmployees(mockEmployees);
+            setAnalytics(mockAnalytics);
+            setPaginationData({
+              page: 1,
+              totalPages: 1,
+              pageSize: 20,
+              totalCount: mockEmployees.length,
+            });
+            setIsLoading(false);
+            return;
+          }
+
           const response = await EmployeeService.fetch({
             page: currentPage,
             perPage: paginationData.pageSize,
@@ -244,9 +309,18 @@ export default function EmployeeDirectory() {
             onClick={() => setIsCreateEmployeeOpen(true)}
             className="h-10 gap-2 rounded-lg bg-[#6C2BD9] px-5 text-sm font-medium text-white hover:bg-[#5A23B8]"
           >
-            <PlusCircleIcon className="size-4" />
+            <AddIcon />
             Add New Employee
           </Button>
+          {USE_MOCK_FOR_TESTING && (
+            <Button
+              variant="outline"
+              onClick={() => setIsSuccessModalOpen(true)}
+              className="h-10 text-sm"
+            >
+              Test success modal
+            </Button>
+          )}
         </div>
       </div>
 

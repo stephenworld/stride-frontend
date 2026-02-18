@@ -94,6 +94,7 @@ import OfferStage from './dashboard/hr/recruitment/offer-stage/page';
 import HROnboarding from './dashboard/hr/onboarding/page';
 import AssetManagement from './dashboard/hr/onboarding/asset-management/page';
 import HRServiceDesk from './dashboard/hr/employee-directory/hr-service-desk/page';
+import EmployeeDetail from './dashboard/hr/employee-directory/employees/page';
 import Attendance from './dashboard/hr/attendance-leave/page';
 import Leave from './dashboard/hr/attendance-leave/Leave/page';
 
@@ -589,6 +590,10 @@ const router = createBrowserRouter([
                       {
                         path: 'hr-service-desk',
                         Component: HRServiceDesk,
+                      },
+                      {
+                        path: 'employees/:id',
+                        Component: EmployeeDetail,
                       },
                     ],
                   },

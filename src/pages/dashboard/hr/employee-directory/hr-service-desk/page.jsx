@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import { Button } from '@/components/ui/button';
-import { PlusCircleIcon, EyeIcon, Trash2Icon } from 'lucide-react';
+import { EyeIcon, Trash2Icon } from 'lucide-react';
+import { AddIcon } from '@/components/ui/svgs';
 import AccountingTable from '@/components/dashboard/accounting/table';
 import MetricCard from '@/components/dashboard/hr/metric-card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -327,7 +328,7 @@ export default function HRServiceDesk() {
             onClick={() => setIsCreateTicketOpen(true)}
             className="h-10 gap-2 rounded-lg bg-[#6C2BD9] px-5 text-sm font-medium text-white hover:bg-[#5A23B8]"
           >
-            <PlusCircleIcon className="size-4" />
+            <AddIcon />
             Create New Ticket
           </Button>
         </div>
@@ -375,7 +376,7 @@ export default function HRServiceDesk() {
         >
           <DialogHeader className="flex flex-row items-center gap-3 space-y-0 text-left">
             <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-[#254C00]">
-              <PlusCircleIcon className="size-5 text-white" />
+              <AddIcon />
             </div>
             <div className="flex-1">
               <DialogTitle className="font-raleway text-2xl font-semibold">
@@ -403,7 +404,7 @@ export default function HRServiceDesk() {
                       defaultValue={field.value}
                     >
                       <FormControl>
-                        <SelectTrigger className={'h-11'}>
+                        <SelectTrigger className="h-11 w-full">
                           <SelectValue placeholder="Employment Letter" />
                         </SelectTrigger>
                       </FormControl>
@@ -456,7 +457,7 @@ export default function HRServiceDesk() {
                       defaultValue={field.value}
                     >
                       <FormControl>
-                        <SelectTrigger className={'h-11'}>
+                        <SelectTrigger className="h-11 w-full">
                           <SelectValue placeholder="Low" />
                         </SelectTrigger>
                       </FormControl>
